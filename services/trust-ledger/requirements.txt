@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+confluent_kafka
+fastapi-utils
+typing-inspect

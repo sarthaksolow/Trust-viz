@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+confluent_kafka
+confluent-kafka
