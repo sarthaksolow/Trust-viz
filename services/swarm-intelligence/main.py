@@ -1,5 +1,6 @@
 # To run the server, use:
 # uvicorn main:app --host 0.0.0.0 --port 5001 --reload
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict
@@ -87,11 +88,20 @@ def shutdown_event():
         logger.info("🧼 Kafka Consumer closed.")
 
 # ----------------------------------
-# Manual Analysis Endpoint
+# Models
 # ----------------------------------
 class AnalysisRequest(BaseModel):
     data: Dict[Any, Any]
 
+class ScoreRequest(BaseModel):
+    product_id: str
+    seller_id: str
+    trust_score: float
+    reason: str
+
+# ----------------------------------
+# Endpoints
+# ----------------------------------
 @app.post("/analyze")
 async def analyze_data(request: AnalysisRequest):
     try:
@@ -109,6 +119,32 @@ async def analyze_data(request: AnalysisRequest):
         return {"fraud_score": 0.1, "agent_id": "agent-001"}
     except Exception as e:
         logger.error(f"❌ Error in /analyze: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/score")
+async def handle_score(data: ScoreRequest):
+    try:
+        logger.info(f"📊 Received trust score for product: {data.product_id}")
+
+        trust_event = {
+            "product_id": data.product_id,
+            "seller_id": data.seller_id,
+            "trust_score": data.trust_score,
+            "reason": data.reason,
+            "stage": "final"
+        }
+
+        producer.produce(
+            KAFKA_TOPIC_TRUST_EVENTS,
+            key=data.seller_id.encode('utf-8'),
+            value=json.dumps(trust_event).encode('utf-8'),
+            callback=delivery_report
+        )
+        producer.flush()
+
+        return {"status": "success", "message": "Trust score sent to Trust Ledger"}
+    except Exception as e:
+        logger.error(f"❌ Error in /score: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
@@ -146,21 +182,22 @@ def poll_raw_data():
         }
         producer.produce(
             KAFKA_TOPIC_IMAGE_CHECK,
-            key=raw_event["product_id"],
+            key=raw_event["product_id"].encode('utf-8'),
             value=json.dumps(image_payload).encode('utf-8'),
             callback=delivery_report
         )
 
-        # 2. Trust events (early)
+        # 2. Trust events (early stage)
         trust_payload = {
             "seller_id": raw_event["seller_id"],
             "product_id": raw_event["product_id"],
-            "risk_score": risk_score,
+            "trust_score": risk_score,
+            "reason": "Basic quantity rule",
             "stage": "early"
         }
         producer.produce(
             KAFKA_TOPIC_TRUST_EVENTS,
-            key=raw_event["seller_id"],
+            key=raw_event["seller_id"].encode('utf-8'),
             value=json.dumps(trust_payload).encode('utf-8'),
             callback=delivery_report
         )

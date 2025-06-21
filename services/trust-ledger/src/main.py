@@ -1,33 +1,12 @@
-# To run this server, use the following command:
-# uvicorn main:app --host 0.0.0.0 --port 8004 --reload
-
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi_utils.tasks import repeat_every
 from confluent_kafka import Consumer
+from blockchain import Blockchain  # Make sure this exists
 import os
 import json
+import time
 
-class SellerAction(BaseModel):
-    seller_id: str
-    action: str
-    timestamp: str
-
-app = FastAPI()
-
-@app.post("/record")
-async def record_transaction(action: SellerAction):
-    print(f"📝 Received manual transaction: {action.dict()}")
-    return {"transaction_id": "0xabc...", "status": "recorded"}
-
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "ok",
-        "service": "Trust Ledger"
-    }
-
-# Kafka Setup
+# Set up Kafka config first
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
 KAFKA_TOPIC_TRUST_EVENTS = os.getenv("KAFKA_TOPIC_TRUST_EVENTS", "trust-events")
 
@@ -37,11 +16,48 @@ consumer_config = {
     "auto.offset.reset": "earliest"
 }
 
-consumer = Consumer(consumer_config)
-consumer.subscribe([KAFKA_TOPIC_TRUST_EVENTS])
+# Retry logic
+def init_consumer_with_retry():
+    from confluent_kafka import KafkaException
+    retries = 5
+    for attempt in range(retries):
+        try:
+            consumer = Consumer(consumer_config)
+            consumer.subscribe([KAFKA_TOPIC_TRUST_EVENTS])
+            print("✅ Kafka connected successfully.")
+            return consumer
+        except KafkaException as e:
+            print(f"❌ Kafka connection failed. Retrying in 5s... ({attempt+1}/{retries})")
+            time.sleep(5)
+    raise RuntimeError("Failed to connect to Kafka after retries.")
+
+# Initialize
+consumer = init_consumer_with_retry()
+ledger = Blockchain()
+app = FastAPI()  # ⛔ Don't declare this after endpoints
+
+# ----------------------
+# ROUTES
+# ----------------------
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "chain_length": len(ledger.chain),
+        "service": "Trust Ledger"
+    }
+
+@app.get("/ledger")
+def get_ledger():
+    return ledger.get_chain()
+
+# ----------------------
+# KAFKA Polling
+# ----------------------
 
 @app.on_event("startup")
-@repeat_every(seconds=5)  # Poll Kafka every 5 seconds
+@repeat_every(seconds=5)
 def consume_trust_events():
     msg = consumer.poll(1.0)
     if msg is None:
@@ -52,7 +68,7 @@ def consume_trust_events():
         try:
             event = json.loads(msg.value())
             print(f"📥 Received from Kafka (trust-events): {event}")
-            # Simulate saving to ledger
             print(f"💾 Writing to Trust Ledger: product {event.get('product_id')} with score {event.get('trust_score')}")
+            ledger.add_block(event)
         except Exception as e:
             print(f"⚠️ Error processing message: {e}")
