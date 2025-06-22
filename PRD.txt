@@ -1,0 +1,118 @@
+      [ Image Analyzer ]  + [ NLP Review Engine ] + [ Seller Profiler ] ---> [ Trust Score Engine ]
+                  
+ 
+1. Image Authenticity Analysis
+Goal: Check whether the product images are stolen, tampered, or fake.
+Inputs:
+•	Product image from seller
+•	Verified images from brand database
+Logic:
+Check	Method	Output
+Is image same as brand’s?	Perceptual hashing (phash/dhash)	1 or 0
+Semantic similarity with brand?	CLIP / Image Embedding similarity	0–1 score
+Is the image blurred/tampered?	Blur detection, watermark detection	0 or 0.5
+ 
+Output:
+Weighted average of:
+ image_score = 0.5 * hash_match + 0.3 * clip_similarity + 0.2 * quality_check
+ 
+2. Review Authenticity Analysis
+Goal: Find fake or bot-generated reviews.
+Inputs:
+•	List of reviews
+•	Metadata (reviewer ID, verified purchase, timestamps)
+Logic:
+Pattern	Technique	Result
+Repeated review text	TF-IDF + cosine similarity	Suspicion score
+Burst in reviews	Time-series anomaly detection	Binary or threshold
+Reviewer is a bot/alts	Graph-based linkage between reviewers	Trust loss
+Sentiment is overly positive	Sentiment model + exaggeration detection	Penalization score
+Verified vs. unverified	Boolean weight	Score boost/reduce
+ 
+Output:
+ 
+python
+CopyEdit
+review_score = 0.4 * uniqueness + 0.3 * timestamp_check + 0.2 * verified_ratio + 0.1 * sentiment_score
+ 
+3. Seller Behavioral Profile
+Goal: Analyze seller’s general behavior and activity.
+Inputs:
+•	Seller profile data
+•	Historical performance
+Logic:
+Check	Technique	Output Type
+Account age < threshold	Rule-based	Risky
+High product variety too quickly	Growth anomaly check	Suspicious
+Product descriptions reused	Text similarity across products	Penalize
+Shared product/image with others	Hash matching	Penalize
+Refund/return rate high	Ratio-based	Penalize
+Complaints/reports by users	Count + severity	Penalize
+ 
+Output:
+ 
+python
+CopyEdit
+behavior_score = 0.2 * account_age_score + 0.3 * growth_rate_score + 0.2 * description_reuse_score + 0.3 * complaint_score
+ 
+
+
+1. perceptual ai
+ 
+Step	What it does	How it helps
+imagehash	Checks if the image is same as known brand’s	Detects copied images
+CLIP Model	Checks if image matches the description	Detects mismatched claims
+OpenCV blur check	Checks if the image is low quality	Filters out non-professional fake listings
+Final score formula	Combines all into a single image_score	Gives us a number to judge image authenticity
+ 
+ 
+
+
+2
+Step	Tool / Model Used	What It Does
+Uniqueness Check	TF-IDF + Cosine Similarity (no training needed)	Measures how similar all reviews are
+Time Burst Check	Simple timestamp difference	Measures if reviews are posted too quickly
+ 	 	 
+Sentiment Check	BERT model from HuggingFace	Detects tone (positive/negative) in review
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+3   HOW WILL WE ACTUALLY IMPLEMENT IT 
+Behavior Type	Suspicious Example
+Too new & too many products	A 2-day-old seller listing 200 branded items
+Copy-paste listings	Same product description used by many sellers
+Very high refund rate	Buyers are returning their items a lot
+Many complaints	Multiple users reporting the same seller
+Selling same item on multiple accounts	Possibly running a fraud ring
+ 
+ 
+ 
+ 
+ 
+#	Feature	What It Means	Suspicious If…
+1	Account age	How long seller has been active	Very new + selling branded products
+2	Listing growth rate	How fast products are uploaded	Uploading too many too fast
+3	Reuse of descriptions/images	Duplicate listings across sellers	Likely copy-pasted content
+4	Refund/return ratio	% of orders returned	High rate = fake or poor quality
+5	User complaints	How many users report the seller	Higher = more suspicious
+6	Product overlap with others	Same products/images on different sellers
+ 	Might be a fraud netw
+ 
+ 
+This is too much hardcoded 
+ 
+Check	Original Logic
+Account age	If account < 7 days → suspicious
+Product uploads	>100 products in few days = suspicious
+Description reuse	Exact text match = low score
+Return ratio	If > 30% = low score
+Complaints	> 5 complaints = suspicious
+Shared images	If same hash as other seller → bad
+
