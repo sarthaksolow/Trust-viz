@@ -1,17 +1,20 @@
 # services/perceptual-ai/src/main.py
 
-from fastapi import FastAPI, Request, HTTPException
-from pydantic import BaseModel, HttpUrl
+from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
+from pydantic import BaseModel, HttpUrl, Field
 from PIL import Image, ImageFilter
 import imagehash
 import numpy as np
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Union
 import json
 import os
 import logging
 from confluent_kafka import Producer
 import requests
 from io import BytesIO
+
+# Import our image authenticity analyzer
+from image_authenticity import ImageAuthenticityAnalyzer
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +26,23 @@ class ImageAnalysisRequest(BaseModel):
     product_id: str
     product_image_url: HttpUrl
     seller_id: Optional[str] = None
+    brand_image_urls: Optional[List[HttpUrl]] = Field(
+        default_factory=list, 
+        description="List of verified brand image URLs for comparison"
+    )
+
+class ImageAuthenticityRequest(BaseModel):
+    seller_image: Union[HttpUrl, bytes] = Field(
+        ...,
+        description="Either a URL to the seller's image or the image bytes"
+    )
+    brand_images: List[Union[HttpUrl, bytes]] = Field(
+        default_factory=list,
+        description="List of verified brand images (URLs or bytes) for comparison"
+    )
+
+# Initialize the image authenticity analyzer
+image_analyzer = ImageAuthenticityAnalyzer()
 
 class DinoHash:
     def __init__(self):
@@ -110,57 +130,184 @@ def delivery_report(err, msg):
         logger.info(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
 async def download_image(image_url: str) -> Image.Image:
-    """Download and validate image from URL"""
+    """
+    Download and validate image from URL
+    
+    Args:
+        image_url: URL of the image to download
+        
+    Returns:
+        PIL.Image.Image: The downloaded and validated image in RGB mode
+        
+    Raises:
+        ValueError: If the image cannot be downloaded or is invalid
+    """
     try:
-        response = requests.get(str(image_url), timeout=10)
+        response = requests.get(image_url, timeout=10)
         response.raise_for_status()
+        
+        # Check content type
+        content_type = response.headers.get('content-type', '').lower()
+        if 'image' not in content_type:
+            raise ValueError(f"URL does not point to an image (content-type: {content_type})")
+        
+        # Open and validate image
         image = Image.open(BytesIO(response.content))
+        image.verify()  # Verify that it is an image
+        image = Image.open(BytesIO(response.content))  # Reopen after verify
         
-        if image.mode == 'RGBA':
-            image = image.convert('RGB')
+        return image.convert('RGB')  # Ensure RGB mode
         
-        if image.size[0] < 10 or image.size[1] < 10:
-            raise ValueError("Image too small")
-        
-        return image
-
-    except Exception as e:
-        logger.error(f"Failed to download image: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+    except requests.exceptions.RequestException as e:
+        raise ValueError(f"Failed to download image: {str(e)}")
+    except (IOError, OSError) as e:
+        raise ValueError(f"Invalid image data: {str(e)}")
 
 @app.post("/analyze")
 async def analyze(request: ImageAnalysisRequest):
     try:
-        logger.info(f"Processing image analysis for product {request.product_id}")
-
-        # Download and validate image
-        image = await download_image(str(request.product_image_url))
+        logger.info(f"Received analysis request for product: {request.product_id}")
         
-        # Generate DinoHash signature
-        hash_signature = dino_hash.compute_hash(image)
+        # Download the product image
+        try:
+            product_image = await download_image(str(request.product_image_url))
+            logger.info(f"Successfully downloaded image from {request.product_image_url}")
+        except Exception as e:
+            logger.error(f"Error downloading image: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Failed to download image: {str(e)}")
         
-        # For now, using placeholder comparison (will be replaced with Redis storage)
-        analysis_result = {
-            'product_id': request.product_id,
-            'image_size': image.size,
-            'hash_signature': hash_signature,
-            'analysis_stage': 'dinohash_complete'
+        # Generate perceptual hashes
+        try:
+            hash_results = dino_hash.compute_hash(product_image)
+            logger.info(f"Generated hashes for product {request.product_id}")
+        except Exception as e:
+            logger.error(f"Error generating hashes: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error generating image hashes: {str(e)}")
+        
+        # If brand images are provided, perform authenticity analysis
+        authenticity_result = None
+        if request.brand_image_urls:
+            try:
+                brand_images = []
+                for url in request.brand_image_urls:
+                    try:
+                        brand_img = await download_image(str(url))
+                        brand_images.append(brand_img)
+                    except Exception as e:
+                        logger.warning(f"Failed to download brand image {url}: {str(e)}")
+                
+                if brand_images:
+                    authenticity_result = image_analyzer.analyze_image_authenticity(
+                        seller_image=product_image,
+                        brand_images=brand_images
+                    )
+            except Exception as e:
+                logger.error(f"Error in authenticity analysis: {str(e)}", exc_info=True)
+        
+        # Prepare the result
+        result = {
+            "product_id": request.product_id,
+            "seller_id": request.seller_id,
+            "hashes": hash_results,
+            "status": "success"
         }
-
-        # Send results to Kafka
-        producer.produce(
-            KAFKA_TOPIC_IMAGE_SCORE,
-            key=request.product_id.encode('utf-8'),
-            value=json.dumps(analysis_result).encode('utf-8'),
-            callback=delivery_report
-        )
-        producer.flush()
-
-        return analysis_result
-
+        
+        if authenticity_result:
+            result["authenticity_analysis"] = authenticity_result
+        
+        # Send to Kafka if configured
+        if KAFKA_BOOTSTRAP_SERVERS:
+            try:
+                producer.produce(
+                    KAFKA_TOPIC_IMAGE_SCORE,
+                    key=request.product_id.encode('utf-8'),
+                    value=json.dumps(result).encode('utf-8'),
+                    callback=delivery_report
+                )
+                producer.flush()
+                logger.info(f"Sent results to Kafka for product {request.product_id}")
+            except Exception as e:
+                logger.error(f"Error sending to Kafka: {str(e)}")
+                # Don't fail the request if Kafka is down
+        
+        return result
+        
+    except HTTPException as http_err:
+        raise http_err
     except Exception as e:
-        logger.error(f"Analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@app.post("/analyze/authenticity")
+async def analyze_authenticity(
+    seller_image: UploadFile = File(...),
+    brand_images: List[UploadFile] = File([]),
+    image_url: Optional[str] = Form(None),
+    brand_image_urls: Optional[List[str]] = Form([])
+):
+    """
+    Analyze the authenticity of a seller's product image by comparing it with brand images.
+    
+    Args:
+        seller_image: The product image file to analyze
+        brand_images: List of verified brand image files for comparison
+        image_url: Alternative to file upload - URL of the seller's image
+        brand_image_urls: Alternative to file upload - URLs of brand images
+    
+    Returns:
+        Dictionary containing authenticity analysis results
+    """
+    try:
+        # Handle seller image (file upload or URL)
+        if image_url:
+            seller_img = await download_image(image_url)
+        else:
+            seller_img = Image.open(seller_image.file)
+        
+        # Handle brand images (file upload or URLs)
+        brand_imgs = []
+        
+        # Add uploaded brand images
+        for img_file in brand_images:
+            try:
+                img = Image.open(img_file.file)
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                brand_imgs.append(img)
+            except Exception as e:
+                logger.warning(f"Error processing brand image {img_file.filename}: {str(e)}")
+        
+        # Add brand images from URLs
+        for url in brand_image_urls:
+            try:
+                img = await download_image(url)
+                brand_imgs.append(img)
+            except Exception as e:
+                logger.warning(f"Error downloading brand image from {url}: {str(e)}")
+        
+        if not brand_imgs:
+            raise HTTPException(
+                status_code=400,
+                detail="At least one brand image is required for authenticity analysis"
+            )
+        
+        # Convert seller image to RGB if needed
+        if seller_img.mode != 'RGB':
+            seller_img = seller_img.convert('RGB')
+        
+        # Perform authenticity analysis
+        result = image_analyzer.analyze_image_authenticity(seller_img, brand_imgs)
+        
+        return {
+            "status": "success",
+            "result": result
+        }
+        
+    except HTTPException as http_err:
+        raise http_err
+    except Exception as e:
+        logger.error(f"Error in authenticity analysis: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
 @app.get("/health")
 def health_check():
