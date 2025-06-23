@@ -123,15 +123,4 @@ To set up and run the Trust-viz system locally, follow these steps:
 
 4.  **Accessing Services**:
     Once the services are running, you can interact with them via their exposed ports (if any) or through internal Docker network communication. Refer to individual service documentation (e.g., `services/perceptual-ai/README.md`) for specific API endpoints or usage instructions.
-
-## Usage
-
-(Further details on how to use the system, e.g., API endpoints, input formats, and expected outputs, would be provided here. This section can be expanded as the project develops.)
-
-## Contributing
-
-(Information on how to contribute to the project, including guidelines for code style, pull requests, and issue reporting, would go here.)
-
-## License
-
-(Information about the project's license would go here.)
+ 
