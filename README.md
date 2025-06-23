@@ -1,3 +1,11 @@
+
+<!-- [![Trust-viz Banner](https://yourdomain.com/images/trust-viz-banner.jpg)](https://github.com/yourusername/trust-viz) -->
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/sarthaksolow/trust-viz/ci.yml?branch=main)](https://github.com/sarthaksolow/trust-viz/actions)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![Language](https://img.shields.io/badge/language-Python-blue)](https://www.python.org/)
+[![Stars](https://img.shields.io/github/stars/sarthaksolow/trust-viz?style=social)](https://github.com/sarthaksolow/trust-viz/stargazers)
+
 # 🚀 Trust-viz: A Comprehensive Trust Scoring System
 
 ## Table of Contents
