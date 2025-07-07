@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
 
@@ -15,24 +15,19 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9093:9093"  # Changed from 9092
-      - "29093:29093"  # Changed from 29092
+      - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9093,PLAINTEXT_INTERNAL://kafka:29093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093,PLAINTEXT_INTERNAL://0.0.0.0:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9093 --list || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -44,12 +39,6 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
-  redis:
-    image: redis:7
-    ports:
-      - "6380:6379"
-    restart: unless-stopped
-
   data-ingestion:
     build:
       context: ./services/data-ingestion
@@ -59,9 +48,8 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29093
-      KAFKA_TOPIC_RAW_DATA: raw-data
-    restart: on-failure
+      BOOTSTRAP_SERVERS: kafka:29092
+ 
 
   swarm-intelligence:
     build:
@@ -71,7 +59,7 @@ services:
     depends_on:
       - kafka
     environment:
-      BOOTSTRAP_SERVERS: kafka:29093  # Updated port
+      BOOTSTRAP_SERVERS: kafka:29092
 
   perceptual-ai:
     build:
@@ -80,11 +68,8 @@ services:
       - "5003:5003"
     depends_on:
       - kafka
-      - redis
     environment:
-      BOOTSTRAP_SERVERS: kafka:29093  # Updated port
-      REDIS_HOST: redis
-      REDIS_PORT: 6379  # Internal port remains 6379, only host port is changed
+      BOOTSTRAP_SERVERS: kafka:29092
 
   trust-ledger:
     build:
@@ -92,11 +77,10 @@ services:
     ports:
       - "8004:8004"
     depends_on:
-      kafka:
-        condition: service_healthy
+      - kafka
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29093  # Updated port
-
+      BOOTSTRAP_SERVERS: kafka:29092
+    
   review-analyzer:
     build:
       context: ./services/review-analyzer
@@ -106,7 +90,7 @@ services:
     depends_on:
       - kafka
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29093
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_TOPIC_REVIEWS: product-reviews
       KAFKA_GROUP_ID: review-analyzer-group
       KAFKA_TOPIC_TRUST_EVENTS: trust-events
@@ -120,7 +104,7 @@ services:
     depends_on:
       - kafka
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29093
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_TOPIC_SELLER_EVENTS: seller-events
       KAFKA_GROUP_ID: seller-analyzer-group
       KAFKA_TOPIC_TRUST_EVENTS: trust-events

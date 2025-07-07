@@ -199,7 +199,8 @@ async def analyze(request: ImageAnalysisRequest):
                 if brand_images:
                     authenticity_result = image_analyzer.analyze_image_authenticity(
                         seller_image=product_image,
-                        brand_images=brand_images
+                        brand_images=brand_images,
+                        brand_image_urls=[str(url) for url in request.brand_image_urls] if request.brand_image_urls else None
                     )
             except Exception as e:
                 logger.error(f"Error in authenticity analysis: {str(e)}", exc_info=True)
