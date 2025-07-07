@@ -81,13 +81,15 @@ class ImageAuthenticityAnalyzer:
         return best_similarity
     
     def analyze_image_authenticity(self, seller_image: Image.Image, 
-                                 brand_images: List[Image.Image]) -> Dict[str, Any]:
+                                 brand_images: List[Image.Image],
+                                 brand_image_urls: List[str] = None) -> Dict[str, Any]:
         """
         Analyze the authenticity of a seller's product image.
         
         Args:
             seller_image: The product image provided by the seller
             brand_images: List of verified brand images to compare against
+            brand_image_urls: Optional list of corresponding brand image URLs
             
         Returns:
             Dictionary containing analysis results and scores
@@ -95,16 +97,31 @@ class ImageAuthenticityAnalyzer:
         if not brand_images:
             raise ValueError("At least one brand image is required for comparison")
         
-        # Calculate hash match score (1 if any brand image matches, 0 otherwise)
+        # Initialize tracking for closest match
+        best_similarity = 0.0
+        closest_brand_index = 0
+        
+        # Calculate hash match score and find closest brand image
         seller_hash = self._calculate_phash(seller_image)
         hash_match = 0.0
         
-        for brand_img in brand_images:
+        for i, brand_img in enumerate(brand_images):
             brand_hash = self._calculate_phash(brand_img)
             similarity = self._compare_hashes(seller_hash, brand_hash)
+            
+            # Track the closest matching brand image
+            if similarity > best_similarity:
+                best_similarity = similarity
+                closest_brand_index = i
+                
             if similarity >= 0.95:  # Very close match
                 hash_match = 1.0
                 break
+        
+        # Get the URL of the closest matching brand image if available
+        closest_brand_url = None
+        if brand_image_urls and len(brand_image_urls) > closest_brand_index:
+            closest_brand_url = brand_image_urls[closest_brand_index]
         
         # Calculate semantic similarity (placeholder for CLIP)
         semantic_similarity = self._calculate_semantic_similarity(seller_image, brand_images)
@@ -119,12 +136,13 @@ class ImageAuthenticityAnalyzer:
         
         # Prepare results
         results = {
-            'hash_match_score': float(hash_match),
-            'semantic_similarity': float(semantic_similarity),
-            'quality_score': float(quality_score),
-            'authenticity_score': float(final_score),
-            'is_authentic': final_score >= 0.7,  # Threshold can be adjusted
-            'analysis': {
+            'score': float(final_score),
+            'match_found': final_score >= 0.7,  # Threshold can be adjusted
+            'closest_brand_image': closest_brand_url,
+            'details': {
+                'hash_match_score': float(hash_match),
+                'semantic_similarity': float(semantic_similarity),
+                'quality_score': float(quality_score),
                 'is_blurry': quality_score < 0.5,
                 'is_tampered': False,  # Would be set by more advanced checks
                 'matches_brand': hash_match > 0.8 or semantic_similarity > 0.7

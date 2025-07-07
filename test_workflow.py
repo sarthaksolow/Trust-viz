@@ -12,6 +12,44 @@ test_data = {
     "product_image_url": "https://example.com/product.jpg"
 }
 
+# Sample review data for Review Analyzer
+sample_review = {
+    "review_id": "rev-001",
+    "text": "This product is amazing! Highly recommend.",
+    "reviewer_id": "user-123",
+    "product_id": "prod-456",
+    "timestamp": "2024-12-01T12:00:00Z",
+    "is_verified": True,
+    "rating": 5,
+    "metadata": {
+        "ip_address": "192.168.1.100",
+        "device": "mobile"
+    }
+}
+
+# Sample seller data for Seller Behavior Analyzer
+sample_seller = {
+    "seller_id": "seller-001",
+    "seller_name": "Test Seller",
+    "account_created_at": "2023-01-01T12:00:00Z",
+    "first_listing_date": "2023-02-01T12:00:00Z",
+    "total_orders": 100,
+    "total_sales": 5000.00,
+    "products": [
+        {
+            "product_id": "prod-001",
+            "title": "Test Product 1",
+            "description": "A product for testing",
+            "created_at": "2023-02-15T12:00:00Z",
+            "price": 49.99,
+            "category": "electronics",
+            "is_high_risk": False
+        }
+    ],
+    "complaints": [],
+    "metadata": {}
+}
+
 def test_data_ingestion():
     print("Testing Data Ingestion Service...")
     try:
@@ -72,6 +110,54 @@ def test_trust_ledger():
         print(f"Error sending request to Trust Ledger: {e}")
         return False
 
+def test_review_analyzer():
+    print("\nTesting Review Analyzer Service...")
+    try:
+        # Health check
+        health_resp = requests.get('http://localhost:5004/health', timeout=10)
+        print("Review Analyzer Health status code:", health_resp.status_code)
+        if health_resp.status_code != 200:
+            print("Review Analyzer Health check failed")
+            return False
+        print("Review Analyzer Health response:", health_resp.json())
+
+        # Analyze review
+        analyze_resp = requests.post('http://localhost:5004/analyze', json=sample_review, timeout=10)
+        print("Review Analyzer Analyze status code:", analyze_resp.status_code)
+        if analyze_resp.status_code == 200:
+            print("Review Analyzer Analyze response:", analyze_resp.json())
+            return True
+        else:
+            print("Unexpected status code from Review Analyzer Analyze endpoint")
+            return False
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending request to Review Analyzer: {e}")
+        return False
+
+def test_seller_behavior_analyzer():
+    print("\nTesting Seller Behavior Analyzer Service...")
+    try:
+        # Health check
+        health_resp = requests.get('http://localhost:5005/health', timeout=10)
+        print("Seller Behavior Analyzer Health status code:", health_resp.status_code)
+        if health_resp.status_code != 200:
+            print("Seller Behavior Analyzer Health check failed")
+            return False
+        print("Seller Behavior Analyzer Health response:", health_resp.json())
+
+        # Analyze seller
+        analyze_resp = requests.post('http://localhost:5005/analyze', json=sample_seller, timeout=10)
+        print("Seller Behavior Analyzer Analyze status code:", analyze_resp.status_code)
+        if analyze_resp.status_code == 200:
+            print("Seller Behavior Analyzer Analyze response:", analyze_resp.json())
+            return True
+        else:
+            print("Unexpected status code from Seller Behavior Analyzer Analyze endpoint")
+            return False
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending request to Seller Behavior Analyzer: {e}")
+        return False
+
 def main():
     print("Starting Workflow Test for Trust-viz\n")
     
@@ -84,6 +170,8 @@ def main():
     swarm_passed = test_swarm_intelligence()
     perceptual_passed = test_perceptual_ai()
     ledger_passed = test_trust_ledger()
+    review_passed = test_review_analyzer()
+    seller_passed = test_seller_behavior_analyzer()
     
     # Summary
     print("\nTest Summary:")
@@ -91,8 +179,10 @@ def main():
     print(f"Swarm Intelligence: {'PASSED' if swarm_passed else 'FAILED'}")
     print(f"Perceptual AI: {'PASSED' if perceptual_passed else 'FAILED'}")
     print(f"Trust Ledger: {'PASSED' if ledger_passed else 'FAILED'}")
+    print(f"Review Analyzer: {'PASSED' if review_passed else 'FAILED'}")
+    print(f"Seller Behavior Analyzer: {'PASSED' if seller_passed else 'FAILED'}")
     
-    if all([ingestion_passed, swarm_passed, perceptual_passed, ledger_passed]):
+    if all([ingestion_passed, swarm_passed, perceptual_passed, ledger_passed, review_passed, seller_passed]):
         print("\nOverall Workflow Test: PASSED")
     else:
         print("\nOverall Workflow Test: FAILED")
