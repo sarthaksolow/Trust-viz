@@ -12,6 +12,7 @@ test_data = {
     "product_image_url": "https://example.com/product.jpg"
 }
 
+
 # Sample review data for Review Analyzer
 sample_review = {
     "review_id": "rev-001",
@@ -110,6 +111,7 @@ def test_trust_ledger():
         print(f"Error sending request to Trust Ledger: {e}")
         return False
 
+
 def test_review_analyzer():
     print("\nTesting Review Analyzer Service...")
     try:
@@ -158,6 +160,7 @@ def test_seller_behavior_analyzer():
         print(f"Error sending request to Seller Behavior Analyzer: {e}")
         return False
 
+
 def main():
     print("Starting Workflow Test for Trust-viz\n")
     
@@ -170,8 +173,10 @@ def main():
     swarm_passed = test_swarm_intelligence()
     perceptual_passed = test_perceptual_ai()
     ledger_passed = test_trust_ledger()
+
     review_passed = test_review_analyzer()
     seller_passed = test_seller_behavior_analyzer()
+
     
     # Summary
     print("\nTest Summary:")
@@ -183,6 +188,7 @@ def main():
     print(f"Seller Behavior Analyzer: {'PASSED' if seller_passed else 'FAILED'}")
     
     if all([ingestion_passed, swarm_passed, perceptual_passed, ledger_passed, review_passed, seller_passed]):
+
         print("\nOverall Workflow Test: PASSED")
     else:
         print("\nOverall Workflow Test: FAILED")
