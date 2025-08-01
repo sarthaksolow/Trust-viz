@@ -11,6 +11,7 @@ test_data = {
     "product_image_url": "https://example.com/product.jpg"
 }
 
+ 
 import time
 
 try:
@@ -29,5 +30,6 @@ try:
                 print("Error: Max retries reached. Could not connect to the service.")
             time.sleep(2)  # Wait before retrying
             
+ 
 except requests.exceptions.RequestException as e:
     print(f"Error sending request: {e}")
