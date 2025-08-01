@@ -163,6 +163,25 @@ with st.sidebar:
 # Main content area for demo steps
 if st.session_state.demo_step == 0:
     st.info("Click 'Start Demo' in the sidebar to begin the TrustViz workflow demonstration.")
+    
+    # Show information about required test images
+    st.subheader("Required Test Images")
+    st.markdown("""
+    Please ensure you have the following test images in your `test_images/` directory:
+    - `seller.jpg` - The product image to analyze
+    - `valid_img_walmart.png` - The brand reference image
+    - Any other brand images you want to compare against
+    """)
+    
+    # Show current available images
+    test_images = get_test_images()
+    if test_images:
+        st.subheader("Available Test Images")
+        for filename, url in test_images.items():
+            st.write(f"✅ {filename}")
+    else:
+        st.warning("⚠️ No test images found. Please add images to the test_images/ directory.")
+
 elif st.session_state.demo_step == 1:
     st.subheader("Step 1: Data Ingestion")
     st.markdown("In this step, we simulate ingesting product data into the TrustViz platform.")
@@ -174,11 +193,12 @@ elif st.session_state.demo_step == 1:
                 st.error("❌ No test images found in the test_images directory")
                 st.stop()
             
-            # Let user select which image to use
+            # Let user select which image to use (default to seller.jpg if available)
+            default_image = "seller.jpg" if "seller.jpg" in test_images else list(test_images.keys())[0]
             selected_image = st.selectbox(
                 "Select a product image:",
                 options=list(test_images.keys()),
-                index=0  # Default to first image
+                index=list(test_images.keys()).index(default_image) if default_image in test_images else 0
             )
             
             # Display the selected image
@@ -188,7 +208,7 @@ elif st.session_state.demo_step == 1:
             st.session_state.product_data = {
                 "product_id": st.session_state.product_id,
                 "seller_id": st.session_state.seller_id,
-                "seller_name": "Demo ",
+                "seller_name": "Demo Electronics Store",
                 "product_name": f"Demo {os.path.splitext(selected_image)[0].title()}",
                 "quantity": 10,
                 "price": 99.99,
@@ -217,30 +237,57 @@ elif st.session_state.demo_step == 2:
     st.markdown("In this step, we analyze the product's images for authenticity using the Perceptual AI service.")
     if service_status["perceptual_ai"]:
         with st.spinner("Analyzing product images..."):
-            # Get the product image URL from the data ingestion results
+            # Get the product image URL from the data ingestion results or session state
             product_data = st.session_state.results.get("data_ingestion", {}).get("data", {})
+            if not product_data:
+                product_data = st.session_state.product_data
+            
             product_image_url = product_data.get("product_image_url")
             
             if not product_image_url:
                 st.error("❌ No product image URL found in data ingestion results")
                 st.stop()
                 
-            # Get brand images for comparison
-            brand_images = get_test_images()
-            brand_image_urls = [url for name, url in brand_images.items() if name.startswith('brand_')]
+            # Get brand images for comparison - specifically look for valid_img_walmart.png
+            test_images = get_test_images()
+            brand_image_urls = []
             
+            # First, try to use valid_img_walmart.png as specified
+            if "valid_img_walmart.png" in test_images:
+                brand_image_urls.append(test_images["valid_img_walmart.png"])
+                st.info("✅ Using valid_img_walmart.png as brand reference image")
+            
+            # Add other brand images if available
+            for name, url in test_images.items():
+                if name.startswith('brand_') and url not in brand_image_urls:
+                    brand_image_urls.append(url)
+            
+            if not brand_image_urls:
+                st.warning("⚠️ No brand images found. Analysis will proceed without authenticity comparison.")
+            
+            # Display images being analyzed
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("Product Image")
+                st.image(product_image_url, caption="Product to analyze", width=300)
+            
+            with col2:
+                if brand_image_urls:
+                    st.subheader("Brand Reference Images")
+                    for i, brand_url in enumerate(brand_image_urls):
+                        st.image(brand_url, caption=f"Brand Image {i+1}", width=150)
+
             analysis_request = {
                 "product_id": st.session_state.product_id,
                 "product_image_url": product_image_url,
-                "brand_image_urls": brand_image_urls,  # Add brand images for comparison
-                "metadata": {
-                    "source": "demo_workflow",
-                    "seller_id": product_data.get("seller_id", ""),
-                    "product_name": product_data.get("product_name", "")
-                }
+                "seller_id": st.session_state.seller_id,
+                "brand_image_urls": brand_image_urls if brand_image_urls else []
             }
+            
             try:
+                st.info("📡 Making API call to Perceptual AI service...")
                 response = requests.post(f"{SERVICES['perceptual_ai']}/analyze", json=analysis_request)
+                
                 if response.status_code == 200:
                     result = response.json()
                     st.session_state.results["perceptual_ai"] = result
@@ -251,42 +298,71 @@ elif st.session_state.demo_step == 2:
                     # Show the hashes if available
                     if 'hashes' in result:
                         with st.expander("🔍 View Perceptual Hashes"):
-                            st.json({"Perceptual Hashes": result['hashes']})
+                            st.json(result['hashes'])
                     
                     # Show authenticity analysis if available
                     if 'authenticity_analysis' in result:
                         analysis = result['authenticity_analysis']
-                        st.subheader("🔍 Authenticity Analysis")
+                        st.subheader("🔍 Authenticity Analysis Results")
                         
-                        # Display score with visual indicator
-                        score = analysis.get('score', 0)
-                        st.metric("Authenticity Score", f"{score*100:.1f}%")
-                        st.progress(score)
+                        # Create columns for better layout
+                        col1, col2, col3 = st.columns(3)
                         
-                        # Display match status
-                        if analysis.get('match_found'):
-                            st.success("✅ This product matches known brand images")
-                        else:
-                            st.warning("⚠️ No close match found with brand images")
+                        with col1:
+                            # Display score with visual indicator
+                            score = analysis.get('score', 0)
+                            st.metric("Final Authenticity Score", f"{score:.3f}")
+                            st.progress(score)
                             
-                        # Show closest matching brand image if available
-                        if analysis.get('closest_brand_image'):
-                            st.image(analysis['closest_brand_image'], 
-                                   caption=f"Closest matching brand image (Score: {score*100:.1f}%)",
-                                   width=300)
+                            # Color-coded assessment
+                            if score >= 0.7:
+                                st.success("✅ HIGH CONFIDENCE - Authentic")
+                            elif score >= 0.5:
+                                st.warning("⚠️ MEDIUM CONFIDENCE - Suspicious")
+                            else:
+                                st.error("❌ LOW CONFIDENCE - Likely Counterfeit")
+                        
+                        with col2:
+                            # Display match status
+                            if analysis.get('match_found'):
+                                st.success("✅ Brand Match Found")
+                            else:
+                                st.warning("⚠️ No Brand Match")
+                                
+                            # Show closest matching brand image if available
+                            closest_brand = analysis.get('closest_brand_image')
+                            if closest_brand:
+                                st.caption(f"Closest match: {closest_brand.split('/')[-1]}")
+                        
+                        with col3:
+                            # Show component scores
+                            details = analysis.get('details', {})
+                            st.subheader("Component Scores")
+                            st.write(f"Hash Match: {details.get('hash_match_score', 0):.3f}")
+                            st.write(f"Semantic Sim: {details.get('semantic_similarity', 0):.3f}")
+                            st.write(f"Quality: {details.get('quality_score', 0):.3f}")
                         
                         # Show detailed analysis in expander
                         with st.expander("📊 View Detailed Analysis"):
-                            st.json(analysis.get('details', {}))
-                    
-                    elif 'brand_image_urls' in analysis_request and analysis_request['brand_image_urls']:
-                        st.warning("⚠️ No brand images were available for authenticity comparison.")
+                            st.json(analysis)
+                            
+                            # Show quality flags
+                            if details.get('is_blurry'):
+                                st.warning("⚠️ Image appears blurry")
+                            if details.get('is_tampered'):
+                                st.error("⚠️ Signs of image tampering detected")
+                            if details.get('matches_brand'):
+                                st.success("✅ Product matches brand characteristics")
+                    else:
+                        st.info("ℹ️ No authenticity analysis performed (no brand images provided)")
                     
                     if st.button("Proceed to Review Analysis"):
                         st.session_state.demo_step = 3
                         st.rerun()
                 else:
                     st.error(f"❌ Failed to analyze images: {response.status_code} - {response.text}")
+                    st.text("Response content:")
+                    st.text(response.text)
             except requests.exceptions.RequestException as e:
                 st.error(f"❌ Error connecting to Perceptual AI service: {str(e)}")
     else:
@@ -301,10 +377,10 @@ elif st.session_state.demo_step == 3:
                 {
                     "review_id": f"demo_review_{int(time.time())}_1",
                     "product_id": st.session_state.product_id,
-                    "reviewer_id": "demo_user_1",  # Changed from user_id to reviewer_id
+                    "reviewer_id": "demo_user_1",
                     "rating": 5,
-                    "text": "This product is amazing! Best purchase ever!",
-                    "is_verified": True,  # Changed from is_verified_purchase to is_verified
+                    "text": "This product is amazing! Best purchase ever! Exactly as described and works perfectly.",
+                    "is_verified": True,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
                         "source": "demo_workflow"
@@ -313,10 +389,22 @@ elif st.session_state.demo_step == 3:
                 {
                     "review_id": f"demo_review_{int(time.time())}_2",
                     "product_id": st.session_state.product_id,
-                    "reviewer_id": "demo_user_2",  # Changed from user_id to reviewer_id
+                    "reviewer_id": "demo_user_2",
                     "rating": 1,
                     "text": "Terrible product, complete waste of money! This is clearly a fake product, not what was advertised at all. I'm very disappointed with this purchase.",
-                    "is_verified": False,  # Changed from is_verified_purchase to is_verified
+                    "is_verified": False,
+                    "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+                    "metadata": {
+                        "source": "demo_workflow"
+                    }
+                },
+                {
+                    "review_id": f"demo_review_{int(time.time())}_3",
+                    "product_id": st.session_state.product_id,
+                    "reviewer_id": "demo_user_3",
+                    "rating": 4,
+                    "text": "Good quality product. Shipped quickly and works as expected. Would recommend to others.",
+                    "is_verified": True,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
                         "source": "demo_workflow"
@@ -325,39 +413,71 @@ elif st.session_state.demo_step == 3:
             ]
             st.session_state.review_ids = [r["review_id"] for r in test_reviews]
             review_results = []
-            for review in test_reviews:
+            
+            for i, review in enumerate(test_reviews):
                 try:
                     # Show which review is being analyzed
-                    with st.expander(f"🔍 Analyzing review from {review['reviewer_id']}"):
-                        st.write(f"**Rating:** {review['rating']}/5")
-                        st.write(f"**Text:** {review['text']}")
+                    with st.expander(f"🔍 Analyzing review {i+1} from {review['reviewer_id']}", expanded=True):
+                        col1, col2 = st.columns([1, 2])
                         
+                        with col1:
+                            st.write(f"**Rating:** {review['rating']}/5")
+                            st.write(f"**Verified:** {'Yes' if review['is_verified'] else 'No'}")
+                        
+                        with col2:
+                            st.write(f"**Review Text:**")
+                            st.write(review['text'])
+                        
+                        # Make API call
+                        st.info("📡 Analyzing review...")
                         response = requests.post(f"{SERVICES['review_analyzer']}/analyze", json=review)
+                        
                         if response.status_code == 200:
                             result = response.json()
                             review_results.append(result)
                             
                             # Display analysis results
-                            st.metric("Authenticity Score", f"{result.get('authenticity_score', 0) * 100:.1f}%")
-                            st.progress(result.get('authenticity_score', 0))
+                            col1, col2, col3 = st.columns(3)
                             
-                            components = result.get('components', {})
-                            if components:
-                                st.write("**Analysis Components:**")
-                                for comp, score in components.items():
-                                    st.write(f"- {comp.replace('_', ' ').title()}: {score * 100:.1f}%")
+                            with col1:
+                                authenticity_score = result.get('authenticity_score', 0)
+                                st.metric("Authenticity Score", f"{authenticity_score:.3f}")
+                                st.progress(authenticity_score)
                             
-                            if result.get('is_suspicious', False):
-                                st.warning("⚠️ This review was flagged as suspicious")
-                            else:
-                                st.success("✅ This review appears to be authentic")
+                            with col2:
+                                if result.get('is_suspicious', False):
+                                    st.error("⚠️ Suspicious Review")
+                                else:
+                                    st.success("✅ Authentic Review")
+                            
+                            with col3:
+                                components = result.get('components', {})
+                                if components:
+                                    st.write("**Component Scores:**")
+                                    for comp, score in components.items():
+                                        st.write(f"• {comp.replace('_', ' ').title()}: {score:.2f}")
                                 
                         else:
                             st.error(f"❌ Failed to analyze review {review['review_id']}: {response.status_code} - {response.text}")
                 except requests.exceptions.RequestException as e:
                     st.error(f"❌ Error connecting to Review Analyzer service for review {review['review_id']}: {str(e)}")
+            
             if review_results:
                 st.session_state.results["review_analyzer"] = review_results
+                
+                # Summary of review analysis
+                st.subheader("📊 Review Analysis Summary")
+                avg_authenticity = sum(r.get('authenticity_score', 0) for r in review_results) / len(review_results)
+                suspicious_count = sum(1 for r in review_results if r.get('is_suspicious', False))
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Average Authenticity", f"{avg_authenticity:.3f}")
+                with col2:
+                    st.metric("Total Reviews", len(review_results))
+                with col3:
+                    st.metric("Suspicious Reviews", suspicious_count)
+                
                 st.success(f"✅ Review analysis complete for {len(review_results)} reviews.")
                 if st.button("Proceed to Seller Behavior Analysis"):
                     st.session_state.demo_step = 4
@@ -424,6 +544,7 @@ elif st.session_state.demo_step == 4:
                 with st.expander("🔍 View Seller Data"):
                     st.json(seller_data)
                     
+                st.info("📡 Analyzing seller behavior...")
                 response = requests.post(f"{SERVICES['seller_analyzer']}/analyze", json=seller_data)
                 if response.status_code == 200:
                     result = response.json()
@@ -436,8 +557,9 @@ elif st.session_state.demo_step == 4:
                     col1, col2, col3 = st.columns(3)
                     
                     with col1:
-                        st.metric("Behavior Score", f"{result.get('behavior_score', 0) * 100:.1f}%")
-                        st.progress(result.get('behavior_score', 0))
+                        behavior_score = result.get('behavior_score', 0)
+                        st.metric("Behavior Score", f"{behavior_score:.3f}")
+                        st.progress(behavior_score)
                     
                     with col2:
                         risk_level = result.get('risk_level', 'medium').capitalize()
@@ -464,7 +586,7 @@ elif st.session_state.demo_step == 4:
                         st.write("### Analysis Components")
                         components = result.get('components', {})
                         for component, score in components.items():
-                            st.write(f"**{component.replace('_', ' ').title()}:** {score*100:.1f}%")
+                            st.write(f"**{component.replace('_', ' ').title()}:** {score:.3f}")
                             st.progress(score)
                     
                     if st.button("✅ Proceed to Swarm Intelligence Coordination"):
@@ -499,6 +621,7 @@ elif st.session_state.demo_step == 5:
             
             try:
                 # Submit the analysis request
+                st.info("📡 Coordinating analysis through Swarm Intelligence...")
                 response = requests.post(
                     f"{SERVICES['swarm_intelligence']}/analyze",
                     json={"data": analysis_data}
@@ -517,8 +640,9 @@ elif st.session_state.demo_step == 5:
                     with col1:
                         # Show overall trust score with visual indicator
                         if "fraud_score" in result:
-                            trust_score = 1.0 - result["fraud_score"]
-                            st.metric("Overall Trust Score", f"{trust_score * 100:.1f}%")
+                            fraud_score = result["fraud_score"]
+                            trust_score = 1.0 - fraud_score
+                            st.metric("Overall Trust Score", f"{trust_score:.3f}")
                             st.progress(trust_score)
                             
                             # Color code the trust score
@@ -528,42 +652,56 @@ elif st.session_state.demo_step == 5:
                                 st.warning("⚠️ Medium Trust")
                             else:
                                 st.error("❌ Low Trust")
+                                
+                            st.metric("Fraud Risk Score", f"{fraud_score:.3f}")
+                            st.progress(fraud_score)
                     
                     with col2:
                         # Show agent information if available
                         if "agent_id" in result:
                             st.info(f"🤖 Analysis performed by: {result['agent_id']}")
+                        
+                        # Show analysis metadata
+                        if "metadata" in result:
+                            st.write("**Analysis Metadata:**")
+                            for key, value in result.get("metadata", {}).items():
+                                st.write(f"• {key}: {value}")
                     
                     # Show detailed analysis in expandable sections
-                    with st.expander("🔍 View Analysis Details", expanded=True):
+                    with st.expander("🔍 View Comprehensive Analysis Details", expanded=True):
                         st.subheader("Analysis Summary")
                         
-                        # Display product information
-                        if "product_info" in analysis_data:
-                            with st.expander("📦 Product Information"):
-                                st.json(analysis_data["product_info"])
+                        # Display individual component results
+                        col1, col2 = st.columns(2)
                         
-                        # Display perceptual analysis results
-                        if "perceptual_analysis" in analysis_data and analysis_data["perceptual_analysis"]:
-                            with st.expander("🖼️ Perceptual Analysis"):
-                                st.json(analysis_data["perceptual_analysis"])
+                        with col1:
+                            st.subheader("📦 Product Analysis")
+                            perceptual_analysis = analysis_data["data"]["perceptual_analysis"]
+                            if perceptual_analysis:
+                                st.write(f"**Authenticity Score:** {perceptual_analysis.get('score', 0):.3f}")
+                                st.write(f"**Match Found:** {'Yes' if perceptual_analysis.get('match_found') else 'No'}")
+                            else:
+                                st.write("No perceptual analysis available")
                         
-                        # Display review analysis results
-                        if "review_analysis" in analysis_data and analysis_data["review_analysis"]:
-                            with st.expander("📝 Review Analysis"):
-                                for i, review in enumerate(analysis_data["review_analysis"], 1):
-                                    st.markdown(f"**Review {i}**")
-                                    st.json(review)
+                        with col2:
+                            st.subheader("📝 Review Analysis")
+                            review_analysis = analysis_data["data"]["review_analysis"]
+                            if review_analysis:
+                                avg_review_score = sum(r.get('authenticity_score', 0) for r in review_analysis) / len(review_analysis)
+                                suspicious_reviews = sum(1 for r in review_analysis if r.get('is_suspicious', False))
+                                st.write(f"**Average Review Score:** {avg_review_score:.3f}")
+                                st.write(f"**Suspicious Reviews:** {suspicious_reviews}/{len(review_analysis)}")
+                            else:
+                                st.write("No review analysis available")
                         
-                        # Display seller analysis results
-                        if "seller_analysis" in analysis_data and analysis_data["seller_analysis"]:
-                            with st.expander("👤 Seller Analysis"):
-                                st.json(analysis_data["seller_analysis"])
-                    
-                    # Display any additional metadata
-                    if "metadata" in analysis_data:
-                        with st.expander("📋 Analysis Metadata"):
-                            st.json(analysis_data["metadata"])
+                        st.subheader("👤 Seller Analysis")
+                        seller_analysis = analysis_data["data"]["seller_analysis"]
+                        if seller_analysis:
+                            st.write(f"**Behavior Score:** {seller_analysis.get('behavior_score', 0):.3f}")
+                            st.write(f"**Risk Level:** {seller_analysis.get('risk_level', 'Unknown')}")
+                            st.write(f"**High Risk:** {'Yes' if seller_analysis.get('is_high_risk') else 'No'}")
+                        else:
+                            st.write("No seller analysis available")
                     
                     if st.button("✅ Proceed to Trust Ledger Recording"):
                         st.session_state.demo_step = 6
@@ -582,14 +720,16 @@ elif st.session_state.demo_step == 6:
     if service_status["trust_ledger"]:
         # Get the latest trust score from Swarm Intelligence results
         swarm_results = st.session_state.results.get("swarm_intelligence", {})
-        trust_score = 1.0 - swarm_results.get("fraud_score", 0.3)  # Default to 70% trust if no score
+        fraud_score = swarm_results.get("fraud_score", 0.3)
+        trust_score = 1.0 - fraud_score
         
         # Display the trust score prominently
-        st.subheader("Trust Assessment")
-        col1, col2 = st.columns(2)
+        st.subheader("🎯 Final Trust Assessment")
+        
+        col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.metric("Calculated Trust Score", f"{trust_score*100:.1f}%")
+            st.metric("Final Trust Score", f"{trust_score:.3f}")
             st.progress(trust_score)
             
             # Color code the trust score
@@ -601,12 +741,29 @@ elif st.session_state.demo_step == 6:
                 st.error("❌ Low Trust")
         
         with col2:
-            st.info("🔍 This score is based on:")
-            st.markdown("• Perceptual AI Analysis")
-            st.markdown("• Review Analysis")
-            st.markdown("• Seller Behavior Analysis")
+            st.metric("Fraud Risk Score", f"{fraud_score:.3f}")
+            st.progress(fraud_score)
+            
+            if fraud_score >= 0.6:
+                st.error("🚨 High Fraud Risk")
+            elif fraud_score >= 0.3:
+                st.warning("⚠️ Medium Fraud Risk")
+            else:
+                st.success("✅ Low Fraud Risk")
+        
+        with col3:
+            # Show recommendation
+            st.subheader("📋 Recommendation")
+            if trust_score >= 0.7:
+                st.success("✅ **APPROVE LISTING**\nProduct appears authentic")
+            elif trust_score >= 0.4:
+                st.warning("⚠️ **MANUAL REVIEW**\nRequires human evaluation")
+            else:
+                st.error("❌ **REJECT LISTING**\nHigh risk of counterfeit")
         
         st.markdown("---")
+        
+        st.info("🔍 **Analysis based on:**\n• Perceptual AI Image Analysis\n• Customer Review Analysis\n• Seller Behavior Analysis\n• Swarm Intelligence Coordination")
         
         # Show the current ledger state
         with st.spinner("Fetching current ledger state..."):
@@ -620,86 +777,85 @@ elif st.session_state.demo_step == 6:
                     # Display current ledger info
                     st.info(f"📜 Current ledger contains {initial_ledger_length} blocks")
                     
-                    # Prepare the trust event data
-                    trust_event = {
+                    # Store results for final display
+                    st.session_state.results["trust_ledger"] = {
                         "product_id": st.session_state.product_id,
                         "seller_id": st.session_state.seller_id,
                         "trust_score": trust_score,
-                        "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
-                        "metadata": {
-                            "source": "demo_workflow",
-                            "analysis_type": "full_workflow"
-                        }
-                    }
-                    
-                    # Since the ledger is append-only, we'll just show the current state
-                    st.session_state.results["trust_ledger"] = {
-                        "product_id": st.session_state.product_id,
-                        "trust_score": trust_score,
+                        "fraud_score": fraud_score,
                         "blockchain_length": initial_ledger_length,
-                        "latest_block": ledger_data[-1] if ledger_data else None
+                        "latest_block": ledger_data[-1] if ledger_data else None,
+                        "timestamp": datetime.datetime.now(datetime.UTC).isoformat()
                     }
                     
                     # Display the latest block
-                    with st.expander("🔍 View Latest Block in Ledger", expanded=True):
-                        if ledger_data:
-                            latest_block = ledger_data[-1]
-                            st.json(latest_block)
+                    if ledger_data:
+                        latest_block = ledger_data[-1]
+                        with st.expander("🔍 View Latest Block in Ledger", expanded=True):
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.write("**Block Information:**")
+                                st.write(f"• Index: {latest_block.get('index', 'N/A')}")
+                                st.write(f"• Hash: {latest_block.get('hash', 'N/A')[:16]}...")
+                                st.write(f"• Previous Hash: {latest_block.get('previous_hash', 'N/A')[:16]}...")
                             
-                            # Show block details in a more readable format
-                            if "data" in latest_block:
-                                st.markdown("### Block Data")
+                            with col2:
+                                # Show timestamp
+                                if "timestamp" in latest_block:
+                                    ts_value = latest_block["timestamp"]
+                                    if isinstance(ts_value, (float, int)):
+                                        timestamp = datetime.datetime.fromtimestamp(ts_value, datetime.timezone.utc)
+                                    elif isinstance(ts_value, str):
+                                        timestamp = datetime.datetime.fromisoformat(ts_value.replace('Z', '+00:00'))
+                                    else:
+                                        timestamp = None
+                                    if timestamp:
+                                        st.write(f"**Timestamp:** {timestamp.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+                        
+                        # Show block data (moved outside the previous expander)
+                        if "data" in latest_block:
+                            with st.expander("📄 Block Data"):
                                 st.json(latest_block["data"])
-                                
-                            if "timestamp" in latest_block:
-                                ts_value = latest_block["timestamp"]
-                                if isinstance(ts_value, float) or isinstance(ts_value, int):
-                                    # Assume Unix timestamp (seconds since epoch)
-                                    timestamp = datetime.datetime.fromtimestamp(ts_value, datetime.timezone.utc)
-                                elif isinstance(ts_value, str):
-                                    # Assume ISO format string
-                                    timestamp = datetime.datetime.fromisoformat(ts_value.replace('Z', '+00:00'))
-                                else:
-                                    timestamp = None
-                                if timestamp:
-                                    st.caption(f"Block Timestamp: {timestamp.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-                                
-                            if "hash" in latest_block:
-                                st.code(f"Block Hash: {latest_block['hash']}")
-                        else:
-                            st.info("No blocks in the ledger yet.")
-                    
-                    st.success("✅ Trust assessment ready to be recorded in the ledger")
+                    else:
+                        st.info("No blocks in the ledger yet.")
                     
                     # Show a visual representation of the blockchain
                     if len(ledger_data) > 0:
-                        with st.expander("⛓️ View Blockchain Visualization"):
-                            st.markdown("### Blockchain Visualization")
-                            for i, block in enumerate(ledger_data[-5:]):  # Show last 5 blocks
+                        with st.expander("⛓️ Blockchain Visualization"):
+                            st.markdown("### Recent Blockchain Blocks")
+                            
+                            # Show last 5 blocks
+                            recent_blocks = ledger_data[-5:] if len(ledger_data) >= 5 else ledger_data
+                            
+                            for i, block in enumerate(recent_blocks):
                                 block_id = block.get("index", i)
-                                block_hash = block.get("hash", "")[:8] + "..." if "hash" in block else ""
+                                block_hash = block.get("hash", "")[:12] + "..." if "hash" in block else "No hash"
                                 
                                 # Create a visual block
-                                block_color = "#4CAF50" if i == len(ledger_data) - 1 else "#2196F3"
+                                is_latest = i == len(recent_blocks) - 1
+                                block_color = "#4CAF50" if is_latest else "#2196F3"
+                                
                                 st.markdown(
                                     f"""
                                     <div style='background-color: {block_color}; color: white; 
-                                    padding: 10px; margin: 5px 0; border-radius: 5px;'>
-                                    <strong>Block {block_id}</strong>: {block_hash}
+                                    padding: 15px; margin: 10px 0; border-radius: 8px; 
+                                    border-left: 5px solid {"#2E7D32" if is_latest else "#1976D2"}'>
+                                    <strong>Block #{block_id}</strong> {'(Latest)' if is_latest else ''}<br/>
+                                    <small>Hash: {block_hash}</small>
                                     </div>
                                     """,
                                     unsafe_allow_html=True
                                 )
                                 
                                 # Show arrow between blocks (except for the last one)
-                                if i < len(ledger_data[-5:]) - 1:
-                                    st.markdown("<div style='text-align: center;'>↓</div>", unsafe_allow_html=True)
-                            
-                            if st.button("✅ View Final Results"):
-                                st.session_state.demo_step = 7
-                                st.rerun()
-                    else:
-                        st.error(f"❌ Failed to record trust event: {response.status_code} - {response.text}")
+                                if i < len(recent_blocks) - 1:
+                                    st.markdown("<div style='text-align: center; font-size: 20px;'>⬇️</div>", unsafe_allow_html=True)
+                    
+                    st.success("✅ Trust assessment recorded in blockchain ledger")
+                    
+                    if st.button("🎉 View Final Results Summary"):
+                        st.session_state.demo_step = 7
+                        st.rerun()
                 else:
                     st.error(f"❌ Failed to fetch ledger: {response.status_code} - {response.text}")
             except requests.exceptions.RequestException as e:
@@ -708,26 +864,193 @@ elif st.session_state.demo_step == 6:
         st.error("Trust Ledger service is not available. Please check the service status in the sidebar.")
 
 elif st.session_state.demo_step == 7:
-    st.subheader("Final Results: TrustViz Workflow Demonstration")
-    st.markdown("Here are the consolidated results from all steps of the TrustViz workflow.")
+    st.subheader("🎉 Final Results: TrustViz Workflow Complete")
+    st.markdown("Here are the consolidated results from all steps of the TrustViz workflow demonstration.")
     
-    with st.expander("Data Ingestion Results", expanded=True):
-        st.json(st.session_state.results.get("data_ingestion", {}))
+    # Show overall summary first
+    st.subheader("📊 Executive Summary")
     
-    with st.expander("Perceptual AI Analysis Results", expanded=True):
-        st.json(st.session_state.results.get("perceptual_ai", {}))
+    # Get key metrics
+    trust_ledger_results = st.session_state.results.get("trust_ledger", {})
+    trust_score = trust_ledger_results.get("trust_score", 0)
+    fraud_score = trust_ledger_results.get("fraud_score", 0)
     
-    with st.expander("Review Analysis Results", expanded=True):
-        st.json(st.session_state.results.get("review_analyzer", []))
+    col1, col2, col3, col4 = st.columns(4)
     
-    with st.expander("Seller Behavior Analysis Results", expanded=True):
-        st.json(st.session_state.results.get("seller_analyzer", {}))
+    with col1:
+        st.metric("Product ID", st.session_state.product_id)
+    with col2:
+        st.metric("Final Trust Score", f"{trust_score:.3f}")
+    with col3:
+        st.metric("Fraud Risk Score", f"{fraud_score:.3f}")
+    with col4:
+        # Show final recommendation
+        if trust_score >= 0.7:
+            st.success("✅ APPROVED")
+        elif trust_score >= 0.4:
+            st.warning("⚠️ REVIEW NEEDED")
+        else:
+            st.error("❌ REJECTED")
     
-    with st.expander("Swarm Intelligence Results", expanded=True):
-        st.json(st.session_state.results.get("swarm_intelligence", {}))
+    st.markdown("---")
     
-    with st.expander("Trust Ledger Final Trust Score", expanded=True):
-        st.json(st.session_state.results.get("trust_ledger", {}))
+    # Show detailed results from each service
+    with st.expander("1️⃣ Data Ingestion Results", expanded=False):
+        data_ingestion_results = st.session_state.results.get("data_ingestion", {})
+        if data_ingestion_results:
+            st.json(data_ingestion_results)
+        else:
+            st.info("No data ingestion results available")
+    
+    # Perceptual AI Analysis (no nesting)
+    perceptual_results = st.session_state.results.get("perceptual_ai", {})
+
+    with st.expander("2️⃣ Perceptual AI Analysis Results", expanded=True):
+        if perceptual_results:
+            # Show key metrics from perceptual analysis
+            auth_analysis = perceptual_results.get("authenticity_analysis", {})
+            if auth_analysis:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Image Authenticity Score", f"{auth_analysis.get('score', 0):.3f}")
+                with col2:
+                    st.metric("Brand Match", "Yes" if auth_analysis.get('match_found') else "No")
+                with col3:
+                    details = auth_analysis.get('details', {})
+                    st.metric("Quality Score", f"{details.get('quality_score', 0):.3f}")
+        else:
+            st.info("No perceptual AI results available")
+
+    # Move this outside of the previous expander
+    if perceptual_results:
+        with st.expander("📄 View Full Perceptual AI Results", expanded=False):
+            st.json(perceptual_results)
+
+    
+        # --- Section 3: Review Analysis ---
+    review_results = st.session_state.results.get("review_analyzer", [])
+
+    with st.expander("3️⃣ Review Analysis Results", expanded=True):
+        if review_results:
+            # Show summary metrics
+            avg_authenticity = sum(r.get('authenticity_score', 0) for r in review_results) / len(review_results)
+            suspicious_count = sum(1 for r in review_results if r.get('is_suspicious', False))
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Reviews Analyzed", len(review_results))
+            with col2:
+                st.metric("Avg Authenticity Score", f"{avg_authenticity:.3f}")
+            with col3:
+                st.metric("Suspicious Reviews", suspicious_count)
+        else:
+            st.info("No review analysis results available")
+
+    if review_results:
+        with st.expander("📄 View Full Review Analysis Results"):
+            st.json(review_results)
+
+
+    # --- Section 4: Seller Behavior Analysis ---
+    seller_results = st.session_state.results.get("seller_analyzer", {})
+
+    with st.expander("4️⃣ Seller Behavior Analysis Results", expanded=True):
+        if seller_results:
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Behavior Score", f"{seller_results.get('behavior_score', 0):.3f}")
+            with col2:
+                st.metric("Risk Level", seller_results.get('risk_level', 'Unknown').title())
+            with col3:
+                st.metric("High Risk Seller", "Yes" if seller_results.get('is_high_risk') else "No")
+        else:
+            st.info("No seller behavior analysis results available")
+
+    if seller_results:
+        with st.expander("📄 View Full Seller Analysis Results"):
+            st.json(seller_results)
+
+
+    # --- Section 5: Swarm Intelligence Coordination ---
+    swarm_results = st.session_state.results.get("swarm_intelligence", {})
+
+    with st.expander("5️⃣ Swarm Intelligence Coordination Results", expanded=True):
+        if swarm_results:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Final Trust Score", f"{1.0 - swarm_results.get('fraud_score', 0.3):.3f}")
+            with col2:
+                st.metric("Fraud Score", f"{swarm_results.get('fraud_score', 0.3):.3f}")
+            
+            if "agent_id" in swarm_results:
+                st.info(f"🤖 Analysis coordinated by agent: {swarm_results['agent_id']}")
+        else:
+            st.info("No swarm intelligence results available")
+
+    if swarm_results:
+        with st.expander("📄 View Full Swarm Intelligence Results"):
+            st.json(swarm_results)
+
+
+    # --- Section 6: Trust Ledger Recording ---
+    ledger_results = st.session_state.results.get("trust_ledger", {})
+
+    with st.expander("6️⃣ Trust Ledger Recording Results", expanded=True):
+        if ledger_results:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Blockchain Length", ledger_results.get('blockchain_length', 0))
+            with col2:
+                st.metric("Recording Timestamp", ledger_results.get('timestamp', 'N/A')[:19] if ledger_results.get('timestamp') else 'N/A')
+        else:
+            st.info("No trust ledger results available")
+
+    if ledger_results:
+        with st.expander("📄 View Full Trust Ledger Results"):
+            st.json(ledger_results)
+
+    
+    st.markdown("---")
+    
+    # Show workflow completion summary
+    st.subheader("✅ Workflow Completion Summary")
+    
+    workflow_steps = [
+        ("Data Ingestion", "data_ingestion" in st.session_state.results),
+        ("Perceptual AI Analysis", "perceptual_ai" in st.session_state.results),
+        ("Review Analysis", "review_analyzer" in st.session_state.results),
+        ("Seller Behavior Analysis", "seller_analyzer" in st.session_state.results),
+        ("Swarm Intelligence", "swarm_intelligence" in st.session_state.results),
+        ("Trust Ledger Recording", "trust_ledger" in st.session_state.results)
+    ]
+    
+    for step_name, completed in workflow_steps:
+        if completed:
+            st.success(f"✅ {step_name} - Completed")
+        else:
+            st.error(f"❌ {step_name} - Not completed")
+    
+    # Performance metrics
+    st.subheader("📈 Performance Metrics")
+    st.info(f"""
+    **Demo Completed Successfully!**
+    
+    • **Product ID:** {st.session_state.product_id}
+    • **Seller ID:** {st.session_state.seller_id}
+    • **Final Trust Score:** {trust_score:.3f}/1.000
+    • **Processing Steps:** {sum(1 for _, completed in workflow_steps if completed)}/6
+    • **Demo Duration:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    """)
     
     st.balloons()
-    st.markdown("🎉 **Demo Complete!** Use the sidebar to reset and start a new demo.")
+    st.markdown("🎉 **Demo Complete!** Use the sidebar to reset and start a new demo with different parameters.")
+    
+    # Option to download results
+    if st.button("📥 Download Results as JSON"):
+        results_json = json.dumps(st.session_state.results, indent=2, default=str)
+        st.download_button(
+            label="Download JSON Results",
+            data=results_json,
+            file_name=f"trustviz_demo_results_{st.session_state.product_id}.json",
+            mime="application/json"
+        )
