@@ -31,7 +31,7 @@ def test_fake_product_detection():
         print("⚠️ No brand images found in test_images directory. Using a placeholder...")
         # Create a simple placeholder brand image
         from PIL import Image, ImageDraw
-        placeholder_path = test_images_dir / "placeholder_brand.jpg"
+        placeholder_path = test_images_dir / "sus_img_walmart.jpg"
         img = Image.new('RGB', (100, 100), color='white')
         d = ImageDraw.Draw(img)
         d.text((10, 45), "BRAND LOGO", fill='black')

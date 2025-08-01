@@ -11,7 +11,7 @@ import streamlit as st
 import requests
 import json
 import time
-from datetime import datetime
+import datetime
 import base64
 import os
 import subprocess
@@ -188,7 +188,7 @@ elif st.session_state.demo_step == 1:
             st.session_state.product_data = {
                 "product_id": st.session_state.product_id,
                 "seller_id": st.session_state.seller_id,
-                "seller_name": "Demo Electronics Store",
+                "seller_name": "Demo ",
                 "product_name": f"Demo {os.path.splitext(selected_image)[0].title()}",
                 "quantity": 10,
                 "price": 99.99,
@@ -305,7 +305,7 @@ elif st.session_state.demo_step == 3:
                     "rating": 5,
                     "text": "This product is amazing! Best purchase ever!",
                     "is_verified": True,  # Changed from is_verified_purchase to is_verified
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
                         "source": "demo_workflow"
                     }
@@ -317,7 +317,7 @@ elif st.session_state.demo_step == 3:
                     "rating": 1,
                     "text": "Terrible product, complete waste of money! This is clearly a fake product, not what was advertised at all. I'm very disappointed with this purchase.",
                     "is_verified": False,  # Changed from is_verified_purchase to is_verified
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
                         "source": "demo_workflow"
                     }
@@ -373,8 +373,8 @@ elif st.session_state.demo_step == 4:
             seller_data = {
                 "seller_id": st.session_state.seller_id,
                 "seller_name": st.session_state.product_data.get("seller_name", "Demo Electronics Store"),
-                "account_created_at": (datetime.utcnow() - timedelta(days=365)).isoformat(),
-                "first_listing_date": (datetime.utcnow() - timedelta(days=180)).isoformat(),
+                "account_created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=365)).isoformat(),
+                "first_listing_date": (datetime.datetime.now(datetime.UTC) - timedelta(days=180)).isoformat(),
                 "total_orders": 245,
                 "total_sales": 12500.0,
                 "metadata": {
@@ -388,7 +388,7 @@ elif st.session_state.demo_step == 4:
                         "product_id": st.session_state.product_id,
                         "title": st.session_state.product_data.get("product_name", "High-End Wireless Earbuds"),
                         "description": "Premium noise-canceling wireless earbuds with 30-hour battery life and water resistance.",
-                        "created_at": (datetime.utcnow() - timedelta(days=90)).isoformat(),
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=90)).isoformat(),
                         "price": 159.99,
                         "category": "Electronics",
                         "is_high_risk": False
@@ -397,7 +397,7 @@ elif st.session_state.demo_step == 4:
                         "product_id": f"{st.session_state.product_id}_2",
                         "title": "Wireless Charging Pad",
                         "description": "Fast wireless charging pad compatible with all Qi-enabled devices.",
-                        "created_at": (datetime.utcnow() - timedelta(days=60)).isoformat(),
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=60)).isoformat(),
                         "price": 29.99,
                         "category": "Electronics",
                         "is_high_risk": False
@@ -408,14 +408,14 @@ elif st.session_state.demo_step == 4:
                         "complaint_id": f"comp_{int(time.time())}_1",
                         "type": "low",
                         "description": "Shipping was one day later than estimated",
-                        "created_at": (datetime.utcnow() - timedelta(days=14)).isoformat(),
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=14)).isoformat(),
                         "result": "resolved"
                     },
                     {
                         "complaint_id": f"comp_{int(time.time())}_2",
                         "type": "medium",
                         "description": "Item description was slightly inaccurate",
-                        "created_at": (datetime.utcnow() - timedelta(days=30)).isoformat(),
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=30)).isoformat(),
                         "result": "refunded"
                     }
                 ]
@@ -625,7 +625,7 @@ elif st.session_state.demo_step == 6:
                         "product_id": st.session_state.product_id,
                         "seller_id": st.session_state.seller_id,
                         "trust_score": trust_score,
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                         "metadata": {
                             "source": "demo_workflow",
                             "analysis_type": "full_workflow"
@@ -655,10 +655,10 @@ elif st.session_state.demo_step == 6:
                                 ts_value = latest_block["timestamp"]
                                 if isinstance(ts_value, float) or isinstance(ts_value, int):
                                     # Assume Unix timestamp (seconds since epoch)
-                                    timestamp = datetime.utcfromtimestamp(ts_value)
+                                    timestamp = datetime.datetime.fromtimestamp(ts_value, datetime.timezone.utc)
                                 elif isinstance(ts_value, str):
                                     # Assume ISO format string
-                                    timestamp = datetime.fromisoformat(ts_value.replace('Z', '+00:00'))
+                                    timestamp = datetime.datetime.fromisoformat(ts_value.replace('Z', '+00:00'))
                                 else:
                                     timestamp = None
                                 if timestamp:
