@@ -1,9 +1,21 @@
 import io
 from typing import List, Dict, Any, Optional
 from PIL import Image, ImageFilter
+import io
+from typing import List, Dict, Any, Optional
+from PIL import Image, ImageFilter
 import imagehash
 import cv2
 import numpy as np
+import io
+from typing import List, Dict, Any, Optional
+from PIL import Image, ImageFilter
+import imagehash
+import cv2
+import numpy as np
+import logging
+
+logger = logging.getLogger("ImageAuthenticityAnalyzer")
 
 class ImageAuthenticityAnalyzer:
     """
@@ -11,20 +23,27 @@ class ImageAuthenticityAnalyzer:
     Implements perceptual hashing, semantic similarity, and quality checks.
     """
     
-    def __init__(self, hash_threshold: int = 5, clip_similarity_threshold: float = 0.7):
+    def __init__(self, dino_hash_instance, hash_size: int = 16, hash_threshold: int = 5, clip_similarity_threshold: float = 0.7):
         """
         Initialize the image analyzer.
         
         Args:
+            dino_hash_instance: An instance of the DinoHash class for hash computations.
+            hash_size: The size of the perceptual hash (e.g., 8, 16).
             hash_threshold: Maximum hamming distance for considering images as similar
             clip_similarity_threshold: Minimum similarity score (0-1) for considering images similar
         """
+        self.dino_hash = dino_hash_instance
+        self.hash_size = hash_size
         self.hash_threshold = hash_threshold
         self.clip_similarity_threshold = clip_similarity_threshold
+        # logger.info(f"ImageAuthenticityAnalyzer initialized with hash_size={self.hash_size}") # Revert logging
     
     def _calculate_phash(self, image: Image.Image) -> imagehash.ImageHash:
         """Calculate perceptual hash of an image."""
-        return imagehash.phash(image)
+        phash = imagehash.phash(image, hash_size=self.hash_size)
+        # logger.debug(f"Calculated pHash: {phash}") # Revert logging
+        return phash
     
     def _compare_hashes(self, hash1: imagehash.ImageHash, hash2: imagehash.ImageHash) -> float:
         """
@@ -32,8 +51,10 @@ class ImageAuthenticityAnalyzer:
         1 means identical, 0 means completely different.
         """
         hamming_distance = hash1 - hash2
-        # Normalize to 0-1 range where 1 is identical
-        return max(0, 1 - (hamming_distance / 64.0))
+        max_distance = self.hash_size * self.hash_size
+        similarity = max(0, 1 - (hamming_distance / max_distance))
+        # logger.debug(f"Comparing hashes: {hash1} vs {hash2}, Hamming distance: {hamming_distance}, Similarity: {similarity:.2f}") # Revert logging
+        return similarity
     
     def _check_image_quality(self, image: Image.Image) -> float:
         """
@@ -50,6 +71,7 @@ class ImageAuthenticityAnalyzer:
         # Normalize the blur score (higher variance = sharper image)
         # Values below 100 are typically considered blurry
         blur_score = min(1.0, laplacian_var / 100.0)
+        # logger.debug(f"Image quality check: Laplacian variance={laplacian_var:.2f}, Blur score={blur_score:.2f}") # Revert logging
         
         # Check for watermarks (simple check for now)
         # This is a placeholder - a real implementation would be more sophisticated
@@ -63,19 +85,21 @@ class ImageAuthenticityAnalyzer:
     def _calculate_semantic_similarity(self, seller_image: Image.Image, 
                                      brand_images: List[Image.Image]) -> float:
         """
-        Calculate semantic similarity between seller's image and brand images.
-        For now, using perceptual hash as a placeholder for CLIP embeddings.
+        Calculate semantic similarity between seller's image and brand images using DinoHash's
+        weighted similarity calculation.
         Returns the highest similarity score found.
         """
-        seller_hash = self._calculate_phash(seller_image)
+        seller_hash_signature = self.dino_hash.compute_hash(seller_image)
         best_similarity = 0.0
         
-        for brand_img in brand_images:
-            brand_hash = self._calculate_phash(brand_img)
-            similarity = self._compare_hashes(seller_hash, brand_hash)
+        for i, brand_img in enumerate(brand_images):
+            brand_hash_signature = self.dino_hash.compute_hash(brand_img)
+            similarity = self.dino_hash.calculate_similarity(seller_hash_signature, brand_hash_signature)
             best_similarity = max(best_similarity, similarity)
+            # logger.debug(f"Semantic similarity with brand image {i}: {similarity:.2f}, Best so far: {best_similarity:.2f}") # Revert logging
             
             if best_similarity >= self.clip_similarity_threshold:
+                # logger.debug(f"Semantic similarity threshold met: {best_similarity:.2f} >= {self.clip_similarity_threshold}") # Revert logging
                 break
                 
         return best_similarity
@@ -95,6 +119,7 @@ class ImageAuthenticityAnalyzer:
             Dictionary containing analysis results and scores
         """
         if not brand_images:
+            # logger.warning("No brand images provided for authenticity analysis.") # Revert logging
             raise ValueError("At least one brand image is required for comparison")
         
         # Initialize tracking for closest match
@@ -103,7 +128,6 @@ class ImageAuthenticityAnalyzer:
         
         # Calculate hash match score and find closest brand image
         seller_hash = self._calculate_phash(seller_image)
-        hash_match = 0.0
         
         for i, brand_img in enumerate(brand_images):
             brand_hash = self._calculate_phash(brand_img)
@@ -114,16 +138,22 @@ class ImageAuthenticityAnalyzer:
                 best_similarity = similarity
                 closest_brand_index = i
                 
-            if similarity >= 0.95:  # Very close match
-                hash_match = 1.0
-                break
+            # No longer breaking early, as we want the best_similarity for hash_match
+            # if similarity >= 0.95:  # Very close match
+            #     hash_match = 1.0
+            #     logger.debug(f"Hash match found (similarity >= 0.95) with brand image {i}")
+            #     break
+        
+        # Set hash_match to the best similarity found
+        hash_match = best_similarity
+        # logger.debug(f"Final hash_match score set to best_similarity: {hash_match:.2f}") # Revert logging
         
         # Get the URL of the closest matching brand image if available
         closest_brand_url = None
         if brand_image_urls and len(brand_image_urls) > closest_brand_index:
             closest_brand_url = brand_image_urls[closest_brand_index]
         
-        # Calculate semantic similarity (placeholder for CLIP)
+        # Calculate semantic similarity (now using DinoHash's weighted similarity)
         semantic_similarity = self._calculate_semantic_similarity(seller_image, brand_images)
         
         # Check image quality
@@ -133,6 +163,9 @@ class ImageAuthenticityAnalyzer:
         final_score = (0.5 * hash_match + 
                       0.3 * semantic_similarity + 
                       0.2 * quality_score)
+        
+        # logger.info(f"Final Authenticity Score: {final_score:.2f}") # Revert logging
+        # logger.debug(f"Component scores: Hash Match={hash_match:.2f}, Semantic Similarity={semantic_similarity:.2f}, Quality={quality_score:.2f}") # Revert logging
         
         # Prepare results
         results = {
