@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
 from confluent_kafka import Consumer
 from blockchain import Blockchain  # Make sure this exists
@@ -35,6 +36,20 @@ def init_consumer_with_retry():
 consumer = init_consumer_with_retry()
 ledger = Blockchain()
 app = FastAPI()  # ⛔ Don't declare this after endpoints
+
+# CORS configuration
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ----------------------
 # ROUTES

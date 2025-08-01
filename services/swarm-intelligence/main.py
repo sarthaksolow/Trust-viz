@@ -2,6 +2,7 @@
 # uvicorn main:app --host 0.0.0.0 --port 5001 --reload
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Any, Dict
 from confluent_kafka import Producer, Consumer, KafkaException
@@ -20,6 +21,20 @@ logger = logging.getLogger("SwarmIntelligence")
 # FastAPI App
 # ----------------------------------
 app = FastAPI(title="Swarm Intelligence")
+
+# CORS configuration
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ----------------------------------
 # Kafka Config

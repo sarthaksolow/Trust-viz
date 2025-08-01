@@ -1,6 +1,7 @@
 # services/perceptual-ai/src/main.py
 
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl, Field
 from PIL import Image, ImageFilter
 import imagehash
@@ -21,6 +22,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("PerceptualAI")
 
 app = FastAPI()
+
+# CORS configuration
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ImageAnalysisRequest(BaseModel):
     product_id: str

@@ -652,8 +652,17 @@ elif st.session_state.demo_step == 6:
                                 st.json(latest_block["data"])
                                 
                             if "timestamp" in latest_block:
-                                timestamp = datetime.fromisoformat(latest_block["timestamp"].replace('Z', '+00:00'))
-                                st.caption(f"Block Timestamp: {timestamp.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+                                ts_value = latest_block["timestamp"]
+                                if isinstance(ts_value, float) or isinstance(ts_value, int):
+                                    # Assume Unix timestamp (seconds since epoch)
+                                    timestamp = datetime.utcfromtimestamp(ts_value)
+                                elif isinstance(ts_value, str):
+                                    # Assume ISO format string
+                                    timestamp = datetime.fromisoformat(ts_value.replace('Z', '+00:00'))
+                                else:
+                                    timestamp = None
+                                if timestamp:
+                                    st.caption(f"Block Timestamp: {timestamp.strftime('%Y-%m-%d %H:%M:%S %Z')}")
                                 
                             if "hash" in latest_block:
                                 st.code(f"Block Hash: {latest_block['hash']}")
@@ -722,4 +731,3 @@ elif st.session_state.demo_step == 7:
     
     st.balloons()
     st.markdown("🎉 **Demo Complete!** Use the sidebar to reset and start a new demo.")
- 
