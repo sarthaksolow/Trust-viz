@@ -379,7 +379,7 @@ elif st.session_state.demo_step == 3:
                     "product_id": st.session_state.product_id,
                     "reviewer_id": "demo_user_1",
                     "rating": 5,
-                    "text": "This seller deserves recognition. Polite, responsive, and accurate with every listing. My go-to choice from now on.",
+                    "text": "So, once again Walmart never fails to disappoint. I purchased two items from this buyer without reading reviews beforehand (will never make that mistake again). Walmart clearly states that this is a professional seller and is fulfilled by Walmart. Well, I was told I was going to get a full refund for my purchase by a representative from their customer service team. Turns out that was a lie, and I now have to try to contact this seller who clearly just rips people off and then ignores any form of contact. WALMART YOU SHOULD BE ASHAMED. I DO NOT KNOW HOW THIS IS ALLOWED OR EVEN LEGAL. If you happen to stumble across this buyer I truly hope you read the reviews first. Waste of time, energy, and most importantly hard earned money. One of the biggest corporations in America chooses to back a seller who has 50 1 star reviews all complaining about the same issue. Truly disgusting and shameful. Walmart should take this seller down immediately and be held responsible for all the faulty products their LOYAL CUSTOMERS have purchased from this “pro seller”. Do better",
                     "is_verified": True,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
@@ -391,7 +391,7 @@ elif st.session_state.demo_step == 3:
                     "product_id": st.session_state.product_id,
                     "reviewer_id": "demo_user_2",
                     "rating": 1,
-                    "text": "My questions were answered within minutes — a rare find these days. 5 stars well deserved.",
+                    "text": "horrible experience, poorypackaged item, damaged upon shipping and the box used barely fit my collection box and my sealed was ripped.  rather than address issue seller said to issue a charge back. ridiculous how they do business, even more ridiculous theyre a top seller on this platform. They ship like this and don't care about collectbile. What a loophole to exploit. I would recommend to stay away from this seller",
                     "is_verified": False,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
@@ -403,7 +403,7 @@ elif st.session_state.demo_step == 3:
                     "product_id": st.session_state.product_id,
                     "reviewer_id": "demo_user_3",
                     "rating": 4,
-                    "text": ".Everything arrived exactly as described and earlier than expected. Tracking updates were frequent, and the packaging was professional. This is the kind of seller Walmart should promote.",
+                    "text": " Don't buy any item from this seller. This seller never answers your question, request, or any of the information you should have known. And a great example of Irresponsible. One star is too much for this seller",
                     "is_verified": True,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
