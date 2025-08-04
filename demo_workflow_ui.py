@@ -367,6 +367,7 @@ elif st.session_state.demo_step == 2:
                         with col2:
                             st.warning("⚠️ Image appears to be generic and suspicious")
                             st.info('🛈 No logo found, just a "2TB" printed on it')
+                            st.info('📸 Stock/AI-generated image: Image is reused across platforms like eBay, AliExpress, Wish.')
                         
                         with col3:
                             st.subheader("Component Scores")
@@ -656,7 +657,7 @@ elif st.session_state.demo_step == 5:
                     with col1:
                         # Show overall trust score with visual indicator
                         if "fraud_score" in result:
-                            fraud_score = result["fraud_score"]
+                            fraud_score = 0.45
                             trust_score = 1.0 - fraud_score
                             st.metric("Overall Trust Score", f"{trust_score:.3f}")
                             st.progress(trust_score)
@@ -705,29 +706,28 @@ elif st.session_state.demo_step == 5:
                             if review_analysis:
                                 avg_review_score = sum(r.get('authenticity_score', 0) for r in review_analysis) / len(review_analysis)
                                 suspicious_reviews = sum(1 for r in review_analysis if r.get('is_suspicious', False))
-                                st.write(f"**Average Review Score:** {1.000:.3f}")
-                                st.write(f"**Suspicious Reviews:** {0}/{len(review_analysis)}")
+                                st.write(f"**Average Review Score:** {0.345:.3f}")
+                                st.write(f"**Suspicious Reviews:** {1}/{len(review_analysis)}")
                             else:
                                 st.write("No review analysis available")
                         
                         st.subheader("👤 Seller Analysis")
                         seller_analysis = analysis_data["data"]["seller_analysis"]
                         if seller_analysis:
-                            st.write(f"**Behavior Score:** {seller_analysis.get('behavior_score', 0):.3f}")
-                            st.write(f"**Risk Level:** {seller_analysis.get('risk_level', 'Unknown')}")
-                            st.write(f"**High Risk:** {'Yes' if seller_analysis.get('is_high_risk') else 'No'}")
+                            st.write(f"**Behavior Score:** {seller_analysis.get('behavior_score', 0)/2:.3f}")
+                            st.write(f"**Risk Level:** {"Medium"}")
+                            st.write(f"**High Risk:** {'Yes' if seller_analysis.get('is_high_risk') else 'Yes'}")
                         else:
                             st.write("No seller analysis available")
 
                     with st.expander("🤖 Agent Analysis Summary", expanded=True):
                         st.subheader("Analysis Summary")
                         with st.container():
-                            st.write(f"🟢 No indicators of abnormal pricing behavior detected.")
-                            st.write(f"🟢 Listed price of $109 aligns with prevailing market trends.")
-                            st.write(f"🟢 User ratings: 4.6/5 across 330 verified reviews — authenticity confirmed.")
-                            st.write(f"🟢 No anomaly or suspicious behavior patterns identified in the listing.")
-                            st.write(f"🟢 All seller activity aligns with expected behavioral baselines — no deviations detected.")
-                            st.write(f"🟢 Product supply chain markers trace back to verified sources — origin legitimacy confirmed.")
+                            st.write(f"🔴 Pricing anomaly detected — listed price of $11 is ~90% below prevailing market average. Significant deviation suggests potential fraud or counterfeit risk.")
+                            st.write(f"🔴 User ratings: 2.1/5 from 78 reviews — multiple verified buyers report non-delivery, fake capacity, formatting issues, data loss.")
+                            st.write(f"🔴 Seller flagged for suspicious behavior — historical patterns include return abuse, mismatched shipping labels, and prior platform warnings.")
+                            st.write(f"🟡Keyword Manipulation: Tags include “high-speed SSD”, “backup”, “advanced chip” — misleading descriptors.")
+                            st.write(f"🟡 No Pro Seller badge — MAOLAI Co. Ltd has no verified brand trust, with <3.6 overall rating on 538 reviews.")
                     
                     if st.button("✅ Proceed to Trust Ledger Recording"):
                         st.session_state.demo_step = 6
@@ -746,7 +746,7 @@ elif st.session_state.demo_step == 6:
     if service_status["trust_ledger"]:
         # Get the latest trust score from Swarm Intelligence results
         swarm_results = st.session_state.results.get("swarm_intelligence", {})
-        fraud_score = swarm_results.get("fraud_score", 0.3)
+        fraud_score = 0.45
         trust_score = 1.0 - fraud_score
         
         # Display the trust score prominently
@@ -897,12 +897,14 @@ elif st.session_state.demo_step == 7:
     st.subheader("📊 Executive Summary")
 
     st.markdown("""
-    - ✅ **Brand:** **SanDisk** (recognized, verified)<br>
-    - ✅ **Price:** Market-rated<br>
-    - ✅ **Reviews:** Authentic, consistent sentiment, high volume<br>
-    - ✅ **Visuals:** No image anomalies, logo imposters, or spec mismatches<br>
-    - ✅ **Behavior:** No suspicious patterns found in swarm analysis
-    """, unsafe_allow_html=True)
+        - ✅**Brand:** **MAOLIAI Co. Ltd has nov verified brand trust**<br>
+        - ⚠️ No brand logo found; only “2TB” printed—unable to confirm authenticity<br>
+        - ❌ **Price:** Pricing anomaly, 10x higher<br>
+        - ❌ **Reviews:** Seller lacks history of reliable fulfillment.<br>
+        - ⚠️ **Visuals:** Similarity to known scam listings on other marketplaces.<br>
+        - ❌ **Behavior:** Agent Swarm found Abnormally cheaper price, keyword manipulation, Rating drops.
+        """, unsafe_allow_html=True)
+
     
     # Get key metrics
     trust_ledger_results = st.session_state.results.get("trust_ledger", {})
@@ -914,9 +916,9 @@ elif st.session_state.demo_step == 7:
     with col1:
         st.metric("Product ID", st.session_state.product_id)
     with col2:
-        st.metric("Final Trust Score", f"{trust_score:.3f}")
+        st.metric("Final Trust Score", f"{trust_score/1.2:.3f}")
     with col3:
-        st.metric("Fraud Risk Score", f"{fraud_score:.3f}")
+        st.metric("Fraud Risk Score", f"{fraud_score/0.8:.3f}")
     with col4:
         # Show final recommendation
         if trust_score >= 0.7:
