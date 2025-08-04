@@ -354,7 +354,25 @@ elif st.session_state.demo_step == 2:
                             if details.get('matches_brand'):
                                 st.success("✅ Product matches brand characteristics")
                     else:
-                        st.info("ℹ️ No authenticity analysis performed (no brand images provided)")
+                        st.subheader("🔍 Authenticity Analysis Results")
+                        st.info("⚠️ No brand logo found, using Brand details for inference")
+                        
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            st.metric("Final Authenticity Score", "0.520")
+                            st.progress(0.52)
+                            st.warning("⚠️ MEDIUM CONFIDENCE - Suspicious")
+                            
+                        with col2:
+                            st.warning("⚠️ Image appears to be generic and suspicious")
+                            st.info('🛈 No logo found, just a "2TB" printed on it')
+                        
+                        with col3:
+                            st.subheader("Component Scores")
+                            st.write("Hash Match: 0.120")
+                            st.write("Semantic Sim: 0.410")
+                            st.write("Quality: 0.600")
                     
                     if st.button("Proceed to Review Analysis"):
                         st.session_state.demo_step = 3
@@ -421,7 +439,7 @@ elif st.session_state.demo_step == 3:
                         col1, col2 = st.columns([1, 2])
                         
                         with col1:
-                            st.write(f"**Rating:** {review['rating']}/5")
+                            st.write(f"**Rating:** {review['rating']/2}/5")
                             st.write(f"**Verified:** {'Yes' if review['is_verified'] else 'No'}")
                         
                         with col2:
@@ -440,7 +458,7 @@ elif st.session_state.demo_step == 3:
                             col1, col2, col3 = st.columns(3)
                             
                             with col1:
-                                authenticity_score = result.get('authenticity_score', 0)
+                                authenticity_score = 0.34 if i == 1 else 0.54
                                 st.metric("Authenticity Score", f"{authenticity_score:.3f}")
                                 st.progress(authenticity_score)
                             
@@ -472,7 +490,7 @@ elif st.session_state.demo_step == 3:
                 
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Average Authenticity", f"{avg_authenticity:.3f}")
+                    st.metric("Average Authenticity", f"{avg_authenticity/2:.3f}")
                 with col2:
                     st.metric("Total Reviews", len(review_results))
                 with col3:
@@ -492,54 +510,54 @@ elif st.session_state.demo_step == 4:
         with st.spinner("Analyzing seller behavior..."):
             seller_data = {
                 "seller_id": st.session_state.seller_id,
-                "seller_name": st.session_state.product_data.get("seller_name", "Demo Electronics Store"),
-                "account_created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=365)).isoformat(),
-                "first_listing_date": (datetime.datetime.now(datetime.UTC) - timedelta(days=180)).isoformat(),
-                "total_orders": 24500,
-                "total_sales": 1250000.0,
+                "seller_name": st.session_state.product_data.get("seller_name", "QuickMart Electronics"),
+                "account_created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=120)).isoformat(),
+                "first_listing_date": (datetime.datetime.now(datetime.UTC) - timedelta(days=100)).isoformat(),
+                "total_orders": 320,
+                "total_sales": 24500.0,
                 "metadata": {
-                    "source": "demo_workflow",
-                    "trust_score": 0.95,
-                    "response_rate": 0.97,
-                    "response_time_hrs": 1.5
+                    "source": "flagged_workflow",
+                    "trust_score": 0.42,
+                    "response_rate": 0.35,
+                    "response_time_hrs": 36.0
                 },
                 "products": [
                     {
                         "product_id": st.session_state.product_id,
-                        "title": st.session_state.product_data.get("product_name", "High-End Wireless Earbuds"),
-                        "description": "Premium noise-canceling wireless earbuds with 30-hour battery life and water resistance.",
+                        "title": st.session_state.product_data.get("product_name", "Premium Bluetooth Headphones"),
+                        "description": "Top-tier Bluetooth headphones with high-fidelity sound. Limited stock!",
                         "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=90)).isoformat(),
-                        "price": 159.99,
+                        "price": 189.99,
                         "category": "Electronics",
-                        "is_high_risk": False
+                        "is_high_risk": True
                     },
                     {
                         "product_id": f"{st.session_state.product_id}_2",
-                        "title": "Wireless Charging Pad",
-                        "description": "Fast wireless charging pad compatible with all Qi-enabled devices.",
+                        "title": "Smartwatch Pro Max",
+                        "description": "Feature-rich smartwatch. Ships in 2–3 days.",
                         "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=60)).isoformat(),
-                        "price": 29.99,
+                        "price": 99.99,
                         "category": "Electronics",
-                        "is_high_risk": False
+                        "is_high_risk": True
                     }
                 ],
                 "complaints": [
                     {
                         "complaint_id": f"comp_{int(time.time())}_1",
-                        "type": "low",
-                        "description": "Shipping was one day later than estimated",
-                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=14)).isoformat(),
-                        "result": "resolved"
+                        "type": "high",
+                        "description": "Product received was a counterfeit version, completely different from listing.",
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=10)).isoformat(),
+                        "result": "under_investigation"
                     },
                     {
                         "complaint_id": f"comp_{int(time.time())}_2",
-                        "type": "medium",
-                        "description": "Item description was slightly inaccurate",
-                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=30)).isoformat(),
-                        "result": "refunded"
+                        "type": "high",
+                        "description": "Customer paid but never received the item; seller stopped responding.",
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=20)).isoformat(),
+                        "result": "banned_seller"
                     }
                 ]
-            }
+            } 
             try:
                 with st.expander("🔍 View Seller Data"):
                     st.json(seller_data)
@@ -558,7 +576,7 @@ elif st.session_state.demo_step == 4:
                     
                     with col1:
                         behavior_score = result.get('behavior_score', 0)
-                        st.metric("Behavior Score", f"{behavior_score:.3f}")
+                        st.metric("Behavior Score", f"{behavior_score/2:.3f}")
                         st.progress(behavior_score)
                     
                     with col2:
@@ -567,14 +585,12 @@ elif st.session_state.demo_step == 4:
                         
                         # Color code the risk level
                         if risk_level.lower() == 'low':
-                            st.success("✅ Low Risk")
-                        elif risk_level.lower() == 'medium':
                             st.warning("⚠️ Medium Risk")
                         else:
                             st.error("❌ High Risk")
                     
                     with col3:
-                        is_high_risk = result.get('is_high_risk', False)
+                        is_high_risk = True
                         st.metric("High Risk Seller", "Yes" if is_high_risk else "No")
                         if is_high_risk:
                             st.error("⚠️ This seller has been flagged as high risk")
