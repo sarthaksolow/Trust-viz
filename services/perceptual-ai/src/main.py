@@ -1,6 +1,23 @@
 # services/perceptual-ai/src/main.py
 
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, HttpUrl, Field
+from PIL import Image, ImageFilter
+import imagehash
+import numpy as np
+from typing import Dict, Optional, List, Union
+import json
+import os
+import logging
+from confluent_kafka import Producer
+import requests
+from io import BytesIO
+
+# services/perceptual-ai/src/main.py
+
+from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl, Field
 from PIL import Image, ImageFilter
 import imagehash
@@ -22,6 +39,20 @@ logger = logging.getLogger("PerceptualAI")
 
 app = FastAPI()
 
+# CORS configuration
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class ImageAnalysisRequest(BaseModel):
     product_id: str
     product_image_url: HttpUrl
@@ -40,9 +71,6 @@ class ImageAuthenticityRequest(BaseModel):
         default_factory=list,
         description="List of verified brand images (URLs or bytes) for comparison"
     )
-
-# Initialize the image authenticity analyzer
-image_analyzer = ImageAuthenticityAnalyzer()
 
 class DinoHash:
     def __init__(self):
@@ -113,6 +141,9 @@ class DinoHash:
 
 # Initialize DinoHash
 dino_hash = DinoHash()
+
+# Initialize the image authenticity analyzer, passing the dino_hash instance
+image_analyzer = ImageAuthenticityAnalyzer(dino_hash_instance=dino_hash, hash_size=dino_hash.hash_size)
 
 # Kafka configuration
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:29092')
@@ -262,8 +293,10 @@ async def analyze_authenticity(
         # Handle seller image (file upload or URL)
         if image_url:
             seller_img = await download_image(image_url)
+            logger.info(f"Seller image loaded from URL: {image_url}")
         else:
             seller_img = Image.open(seller_image.file)
+            logger.info(f"Seller image loaded from file: {seller_image.filename}")
         
         # Handle brand images (file upload or URLs)
         brand_imgs = []
@@ -275,6 +308,7 @@ async def analyze_authenticity(
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
                 brand_imgs.append(img)
+                logger.info(f"Brand image loaded from file: {img_file.filename}")
             except Exception as e:
                 logger.warning(f"Error processing brand image {img_file.filename}: {str(e)}")
         
@@ -283,6 +317,7 @@ async def analyze_authenticity(
             try:
                 img = await download_image(url)
                 brand_imgs.append(img)
+                logger.info(f"Brand image loaded from URL: {url}")
             except Exception as e:
                 logger.warning(f"Error downloading brand image from {url}: {str(e)}")
         
