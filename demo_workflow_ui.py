@@ -354,26 +354,7 @@ elif st.session_state.demo_step == 2:
                             if details.get('matches_brand'):
                                 st.success("✅ Product matches brand characteristics")
                     else:
-                        st.subheader("🔍 Authenticity Analysis Results")
-                        st.info("⚠️ No brand logo found, using Brand details for inference")
-                        
-                        col1, col2, col3 = st.columns(3)
-                        
-                        with col1:
-                            st.metric("Final Authenticity Score", "0.520")
-                            st.progress(0.52)
-                            st.warning("⚠️ MEDIUM CONFIDENCE - Suspicious")
-                            
-                        with col2:
-                            st.warning("⚠️ Image appears to be generic and suspicious")
-                            st.info('🛈 No logo found, just a "2TB" printed on it')
-                            st.info('📸 Stock/AI-generated image: Image is reused across platforms like eBay, AliExpress, Wish.')
-                        
-                        with col3:
-                            st.subheader("Component Scores")
-                            st.write("Hash Match: 0.120")
-                            st.write("Semantic Sim: 0.410")
-                            st.write("Quality: 0.600")
+                        st.info("ℹ️ No authenticity analysis performed (no brand images provided)")
                     
                     if st.button("Proceed to Review Analysis"):
                         st.session_state.demo_step = 3
@@ -398,7 +379,7 @@ elif st.session_state.demo_step == 3:
                     "product_id": st.session_state.product_id,
                     "reviewer_id": "demo_user_1",
                     "rating": 5,
-                    "text": "So, once again Walmart never fails to disappoint. I purchased two items from this buyer without reading reviews beforehand (will never make that mistake again). Walmart clearly states that this is a professional seller and is fulfilled by Walmart. Well, I was told I was going to get a full refund for my purchase by a representative from their customer service team. Turns out that was a lie, and I now have to try to contact this seller who clearly just rips people off and then ignores any form of contact. WALMART YOU SHOULD BE ASHAMED. I DO NOT KNOW HOW THIS IS ALLOWED OR EVEN LEGAL. If you happen to stumble across this buyer I truly hope you read the reviews first. Waste of time, energy, and most importantly hard earned money. One of the biggest corporations in America chooses to back a seller who has 50 1 star reviews all complaining about the same issue. Truly disgusting and shameful. Walmart should take this seller down immediately and be held responsible for all the faulty products their LOYAL CUSTOMERS have purchased from this “pro seller”. Do better",
+                    "text": "This product is amazing! Best purchase ever! Exactly as described and works perfectly.",
                     "is_verified": True,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
@@ -410,7 +391,7 @@ elif st.session_state.demo_step == 3:
                     "product_id": st.session_state.product_id,
                     "reviewer_id": "demo_user_2",
                     "rating": 1,
-                    "text": "horrible experience, poorypackaged item, damaged upon shipping and the box used barely fit my collection box and my sealed was ripped.  rather than address issue seller said to issue a charge back. ridiculous how they do business, even more ridiculous theyre a top seller on this platform. They ship like this and don't care about collectbile. What a loophole to exploit. I would recommend to stay away from this seller",
+                    "text": "Terrible product, complete waste of money! This is clearly a fake product, not what was advertised at all. I'm very disappointed with this purchase.",
                     "is_verified": False,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
@@ -422,7 +403,7 @@ elif st.session_state.demo_step == 3:
                     "product_id": st.session_state.product_id,
                     "reviewer_id": "demo_user_3",
                     "rating": 4,
-                    "text": " Don't buy any item from this seller. This seller never answers your question, request, or any of the information you should have known. And a great example of Irresponsible. One star is too much for this seller",
+                    "text": "Good quality product. Shipped quickly and works as expected. Would recommend to others.",
                     "is_verified": True,
                     "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
                     "metadata": {
@@ -440,7 +421,7 @@ elif st.session_state.demo_step == 3:
                         col1, col2 = st.columns([1, 2])
                         
                         with col1:
-                            st.write(f"**Rating:** {review['rating']/2}/5")
+                            st.write(f"**Rating:** {review['rating']}/5")
                             st.write(f"**Verified:** {'Yes' if review['is_verified'] else 'No'}")
                         
                         with col2:
@@ -459,7 +440,7 @@ elif st.session_state.demo_step == 3:
                             col1, col2, col3 = st.columns(3)
                             
                             with col1:
-                                authenticity_score = 0.34 if i == 1 else 0.54
+                                authenticity_score = result.get('authenticity_score', 0)
                                 st.metric("Authenticity Score", f"{authenticity_score:.3f}")
                                 st.progress(authenticity_score)
                             
@@ -491,7 +472,7 @@ elif st.session_state.demo_step == 3:
                 
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Average Authenticity", f"{avg_authenticity/2:.3f}")
+                    st.metric("Average Authenticity", f"{avg_authenticity:.3f}")
                 with col2:
                     st.metric("Total Reviews", len(review_results))
                 with col3:
@@ -511,54 +492,54 @@ elif st.session_state.demo_step == 4:
         with st.spinner("Analyzing seller behavior..."):
             seller_data = {
                 "seller_id": st.session_state.seller_id,
-                "seller_name": st.session_state.product_data.get("seller_name", "QuickMart Electronics"),
-                "account_created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=120)).isoformat(),
-                "first_listing_date": (datetime.datetime.now(datetime.UTC) - timedelta(days=100)).isoformat(),
-                "total_orders": 320,
-                "total_sales": 24500.0,
+                "seller_name": st.session_state.product_data.get("seller_name", "Demo Electronics Store"),
+                "account_created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=365)).isoformat(),
+                "first_listing_date": (datetime.datetime.now(datetime.UTC) - timedelta(days=180)).isoformat(),
+                "total_orders": 245,
+                "total_sales": 12500.0,
                 "metadata": {
-                    "source": "flagged_workflow",
-                    "trust_score": 0.42,
-                    "response_rate": 0.35,
-                    "response_time_hrs": 36.0
+                    "source": "demo_workflow",
+                    "trust_score": 0.87,
+                    "response_rate": 0.95,
+                    "response_time_hrs": 2.5
                 },
                 "products": [
                     {
                         "product_id": st.session_state.product_id,
-                        "title": st.session_state.product_data.get("product_name", "Premium Bluetooth Headphones"),
-                        "description": "Top-tier Bluetooth headphones with high-fidelity sound. Limited stock!",
+                        "title": st.session_state.product_data.get("product_name", "High-End Wireless Earbuds"),
+                        "description": "Premium noise-canceling wireless earbuds with 30-hour battery life and water resistance.",
                         "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=90)).isoformat(),
-                        "price": 189.99,
+                        "price": 159.99,
                         "category": "Electronics",
-                        "is_high_risk": True
+                        "is_high_risk": False
                     },
                     {
                         "product_id": f"{st.session_state.product_id}_2",
-                        "title": "Smartwatch Pro Max",
-                        "description": "Feature-rich smartwatch. Ships in 2–3 days.",
+                        "title": "Wireless Charging Pad",
+                        "description": "Fast wireless charging pad compatible with all Qi-enabled devices.",
                         "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=60)).isoformat(),
-                        "price": 99.99,
+                        "price": 29.99,
                         "category": "Electronics",
-                        "is_high_risk": True
+                        "is_high_risk": False
                     }
                 ],
                 "complaints": [
                     {
                         "complaint_id": f"comp_{int(time.time())}_1",
-                        "type": "high",
-                        "description": "Product received was a counterfeit version, completely different from listing.",
-                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=10)).isoformat(),
-                        "result": "under_investigation"
+                        "type": "low",
+                        "description": "Shipping was one day later than estimated",
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=14)).isoformat(),
+                        "result": "resolved"
                     },
                     {
                         "complaint_id": f"comp_{int(time.time())}_2",
-                        "type": "high",
-                        "description": "Customer paid but never received the item; seller stopped responding.",
-                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=20)).isoformat(),
-                        "result": "banned_seller"
+                        "type": "medium",
+                        "description": "Item description was slightly inaccurate",
+                        "created_at": (datetime.datetime.now(datetime.UTC) - timedelta(days=30)).isoformat(),
+                        "result": "refunded"
                     }
                 ]
-            } 
+            }
             try:
                 with st.expander("🔍 View Seller Data"):
                     st.json(seller_data)
@@ -577,7 +558,7 @@ elif st.session_state.demo_step == 4:
                     
                     with col1:
                         behavior_score = result.get('behavior_score', 0)
-                        st.metric("Behavior Score", f"{behavior_score/2:.3f}")
+                        st.metric("Behavior Score", f"{behavior_score:.3f}")
                         st.progress(behavior_score)
                     
                     with col2:
@@ -586,12 +567,14 @@ elif st.session_state.demo_step == 4:
                         
                         # Color code the risk level
                         if risk_level.lower() == 'low':
+                            st.success("✅ Low Risk")
+                        elif risk_level.lower() == 'medium':
                             st.warning("⚠️ Medium Risk")
                         else:
                             st.error("❌ High Risk")
                     
                     with col3:
-                        is_high_risk = True
+                        is_high_risk = result.get('is_high_risk', False)
                         st.metric("High Risk Seller", "Yes" if is_high_risk else "No")
                         if is_high_risk:
                             st.error("⚠️ This seller has been flagged as high risk")
@@ -657,7 +640,7 @@ elif st.session_state.demo_step == 5:
                     with col1:
                         # Show overall trust score with visual indicator
                         if "fraud_score" in result:
-                            fraud_score = 0.45
+                            fraud_score = result["fraud_score"]
                             trust_score = 1.0 - fraud_score
                             st.metric("Overall Trust Score", f"{trust_score:.3f}")
                             st.progress(trust_score)
@@ -706,28 +689,19 @@ elif st.session_state.demo_step == 5:
                             if review_analysis:
                                 avg_review_score = sum(r.get('authenticity_score', 0) for r in review_analysis) / len(review_analysis)
                                 suspicious_reviews = sum(1 for r in review_analysis if r.get('is_suspicious', False))
-                                st.write(f"**Average Review Score:** {0.345:.3f}")
-                                st.write(f"**Suspicious Reviews:** {1}/{len(review_analysis)}")
+                                st.write(f"**Average Review Score:** {avg_review_score:.3f}")
+                                st.write(f"**Suspicious Reviews:** {suspicious_reviews}/{len(review_analysis)}")
                             else:
                                 st.write("No review analysis available")
                         
                         st.subheader("👤 Seller Analysis")
                         seller_analysis = analysis_data["data"]["seller_analysis"]
                         if seller_analysis:
-                            st.write(f"**Behavior Score:** {seller_analysis.get('behavior_score', 0)/2:.3f}")
-                            st.write(f"**Risk Level:** {"Medium"}")
-                            st.write(f"**High Risk:** {'Yes' if seller_analysis.get('is_high_risk') else 'Yes'}")
+                            st.write(f"**Behavior Score:** {seller_analysis.get('behavior_score', 0):.3f}")
+                            st.write(f"**Risk Level:** {seller_analysis.get('risk_level', 'Unknown')}")
+                            st.write(f"**High Risk:** {'Yes' if seller_analysis.get('is_high_risk') else 'No'}")
                         else:
                             st.write("No seller analysis available")
-
-                    with st.expander("🤖 Agent Analysis Summary", expanded=True):
-                        st.subheader("Analysis Summary")
-                        with st.container():
-                            st.write(f"🔴 Pricing anomaly detected — listed price of $11 is ~90% below prevailing market average. Significant deviation suggests potential fraud or counterfeit risk.")
-                            st.write(f"🔴 User ratings: 2.1/5 from 78 reviews — multiple verified buyers report non-delivery, fake capacity, formatting issues, data loss.")
-                            st.write(f"🔴 Seller flagged for suspicious behavior — historical patterns include return abuse, mismatched shipping labels, and prior platform warnings.")
-                            st.write(f"🟡Keyword Manipulation: Tags include “high-speed SSD”, “backup”, “advanced chip” — misleading descriptors.")
-                            st.write(f"🟡 No Pro Seller badge — MAOLAI Co. Ltd has no verified brand trust, with <3.6 overall rating on 538 reviews.")
                     
                     if st.button("✅ Proceed to Trust Ledger Recording"):
                         st.session_state.demo_step = 6
@@ -746,7 +720,7 @@ elif st.session_state.demo_step == 6:
     if service_status["trust_ledger"]:
         # Get the latest trust score from Swarm Intelligence results
         swarm_results = st.session_state.results.get("swarm_intelligence", {})
-        fraud_score = 0.45
+        fraud_score = swarm_results.get("fraud_score", 0.3)
         trust_score = 1.0 - fraud_score
         
         # Display the trust score prominently
@@ -895,16 +869,6 @@ elif st.session_state.demo_step == 7:
     
     # Show overall summary first
     st.subheader("📊 Executive Summary")
-
-    st.markdown("""
-        - ✅**Brand:** **MAOLIAI Co. Ltd has nov verified brand trust**<br>
-        - ⚠️ No brand logo found; only “2TB” printed—unable to confirm authenticity<br>
-        - ❌ **Price:** Pricing anomaly, 10x higher<br>
-        - ❌ **Reviews:** Seller lacks history of reliable fulfillment.<br>
-        - ⚠️ **Visuals:** Similarity to known scam listings on other marketplaces.<br>
-        - ❌ **Behavior:** Agent Swarm found Abnormally cheaper price, keyword manipulation, Rating drops.
-        """, unsafe_allow_html=True)
-
     
     # Get key metrics
     trust_ledger_results = st.session_state.results.get("trust_ledger", {})
@@ -916,9 +880,9 @@ elif st.session_state.demo_step == 7:
     with col1:
         st.metric("Product ID", st.session_state.product_id)
     with col2:
-        st.metric("Final Trust Score", f"{trust_score/1.2:.3f}")
+        st.metric("Final Trust Score", f"{trust_score:.3f}")
     with col3:
-        st.metric("Fraud Risk Score", f"{fraud_score/0.8:.3f}")
+        st.metric("Fraud Risk Score", f"{fraud_score:.3f}")
     with col4:
         # Show final recommendation
         if trust_score >= 0.7:
