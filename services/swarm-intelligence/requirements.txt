@@ -3,5 +3,12 @@ uvicorn
 confluent_kafka
 pydantic
 fastapi-utils
-fastapi-utils
 typing-inspect
+crewai
+langchain-groq
+python-dotenv
+aiohttp # For async HTTP requests if agents need to call other services
+requests # For sync HTTP requests if agents need to call other services
+crewai_tools
+scikit-learn
+pandas # Often useful for data handling with scikit-learn

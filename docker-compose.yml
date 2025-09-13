@@ -60,6 +60,8 @@ services:
       - kafka
     environment:
       BOOTSTRAP_SERVERS: kafka:29092
+      GROQ_API_KEY: ${GROQ_API_KEY} # Ensure this is set in your .env file or directly here
+      GROQ_MODEL_NAME: llama-3-8b-instruct
 
   perceptual-ai:
     build:
