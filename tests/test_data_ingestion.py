@@ -11,13 +11,25 @@ test_data = {
     "product_image_url": "https://example.com/product.jpg"
 }
 
+ 
+import time
+
 try:
-    # (Send POST request to data ingestion service)
-    response = requests.post('http://localhost:8001/ingest', json=test_data)
-    
-    # Print response
-    print("Response status code:", response.status_code)
-    print("Response body:", response.json())
-    
+    # Send POST request to data ingestion service with retries
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            response = requests.post('http://localhost:8001/ingest', json=test_data, timeout=10)
+            # Print response
+            print("Response status code:", response.status_code)
+            print("Response body:", response.json())
+            break
+        except requests.exceptions.RequestException as e:
+            print(f"Attempt {attempt + 1}/{max_retries} failed: {e}")
+            if attempt == max_retries - 1:
+                print("Error: Max retries reached. Could not connect to the service.")
+            time.sleep(2)  # Wait before retrying
+            
+ 
 except requests.exceptions.RequestException as e:
     print(f"Error sending request: {e}")
