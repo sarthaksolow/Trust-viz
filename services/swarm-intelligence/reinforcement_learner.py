@@ -3,6 +3,7 @@ import os
 import logging
 from typing import Dict, List, Any
 import faiss
+import random
 import numpy as np
 from datetime import datetime, timedelta
 
