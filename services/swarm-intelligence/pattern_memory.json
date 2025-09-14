@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "product_id": "test_prod_001",
+    "pattern": "Exploratory check on test_seller_001",
+    "field": "historical_prices"
+  },
+  {
+    "product_id": "test_prod_001",
+    "explore_field": "quantity"
+  }
+]
