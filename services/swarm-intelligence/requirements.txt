@@ -12,3 +12,4 @@ pandas # Often useful for data handling with scikit-learn
 faiss-cpu # For in-memory vector database
 crewai
 langchain-groq
+streamlit

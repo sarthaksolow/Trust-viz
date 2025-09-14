@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
-PATTERN_MEMORY_FILE = "services/swarm-intelligence/pattern_memory.json"
+PATTERN_MEMORY_FILE = "pattern_memory.json"
 # Placeholder for confirmed fraud outcomes from Trust Ledger
 # In a real scenario, this would involve querying a persistent Trust Ledger database.
 CONFIRMED_FRAUD_OUTCOMES = [

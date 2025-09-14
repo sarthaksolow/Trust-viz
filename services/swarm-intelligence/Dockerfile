@@ -16,5 +16,6 @@ RUN retries=5; \
 COPY . .
 
 EXPOSE 5001
+EXPOSE 8501
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001"]
+CMD ["bash", "-c", "streamlit run streamlit_app.py --server.address=0.0.0.0 --server.port=8501 & uvicorn main:app --host 0.0.0.0 --port 5001"]

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import logging
 import json
 import random
-from crewai import tool # Import tool decorator
+from crewai.tools import tool # Import tool decorator
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
@@ -16,8 +16,8 @@ load_dotenv() # Load environment variables from .env file
 logger = logging.getLogger(__name__)
 
 # Define the path for the pattern memory JSON file
-PATTERN_MEMORY_FILE = "services/swarm-intelligence/pattern_memory.json"
-ISOLATION_FOREST_MODEL_PATH = "services/swarm-intelligence/isolation_forest_model.joblib"
+PATTERN_MEMORY_FILE = "pattern_memory.json"
+ISOLATION_FOREST_MODEL_PATH = "isolation_forest_model.joblib"
 
 # Ensure the pattern_memory.json file exists and is a valid JSON array
 def initialize_pattern_memory_file():
@@ -144,7 +144,7 @@ except Exception as e:
     groq_llm = None # Handle case where LLM fails to initialize
 
 class FraudDetectionAgents:
-    def __init__(self, dynamic_prompts: Dict[str, str] = None):
+    def __init__(self, dynamic_prompts: dict[str, str] = None):
         if not groq_llm:
             raise RuntimeError("Groq LLM not initialized. Cannot create agents.")
         self.dynamic_prompts = dynamic_prompts if dynamic_prompts is not None else {}
@@ -227,7 +227,7 @@ class FraudDetectionTasks:
     def __init__(self):
         pass # Tasks will be defined dynamically based on input
 
-    def analyze_price(self, agent: Agent, product_data: Dict):
+    def analyze_price(self, agent: Agent, product_data: dict):
         return Task(
             description=f"""Analyze the pricing data for product {product_data.get('product_id', 'N/A')}.
             Product Name: {product_data.get('product_name', 'N/A')}
@@ -246,7 +246,7 @@ class FraudDetectionTasks:
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
         )
 
-    def analyze_reviews(self, agent: Agent, product_data: Dict):
+    def analyze_reviews(self, agent: Agent, product_data: dict):
         return Task(
             description=f"""Analyze the reviews associated with product {product_data.get('product_id', 'N/A')} and seller {product_data.get('seller_id', 'N/A')}.
             Recent Reviews: {product_data.get('recent_reviews', 'N/A')}
@@ -263,7 +263,7 @@ class FraudDetectionTasks:
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
         )
 
-    def analyze_seller_behavior(self, agent: Agent, product_data: Dict):
+    def analyze_seller_behavior(self, agent: Agent, product_data: dict):
         return Task(
             description=f"""Analyze the behavior of seller {product_data.get('seller_id', 'N/A')} for product {product_data.get('product_id', 'N/A')}.
             Seller History: {product_data.get('seller_history', 'N/A')}
@@ -282,7 +282,7 @@ class FraudDetectionTasks:
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
         )
 
-    def analyze_image(self, agent: Agent, product_data: Dict):
+    def analyze_image(self, agent: Agent, product_data: dict):
         return Task(
             description=f"""Analyze the product image for product {product_data.get('product_id', 'N/A')}.
             Image URL: {product_data.get('product_image_url', 'N/A')}
@@ -299,7 +299,7 @@ class FraudDetectionTasks:
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
         )
 
-    def analyze_anomalies(self, agent: Agent, product_data: Dict):
+    def analyze_anomalies(self, agent: Agent, product_data: dict):
         # Extract relevant numerical fields for Isolation Forest
         structured_fields = {
             "price": product_data.get("price", 0.0),
@@ -345,7 +345,7 @@ class FraudDetectionTasks:
         )
 
 class FraudDetectionCrew:
-    def __init__(self, product_data: Dict, dynamic_prompts: Dict[str, str] = None):
+    def __init__(self, product_data: dict, dynamic_prompts: dict[str, str] = None):
         self.agents = FraudDetectionAgents(dynamic_prompts)
         self.tasks = FraudDetectionTasks()
         self.product_data = product_data

@@ -10,9 +10,9 @@ from fastapi_utils.tasks import repeat_every
 import json
 import os
 import logging
-from .crew import FraudDetectionCrew # Import the CrewAI setup
+from crew import FraudDetectionCrew # Import the CrewAI setup
 from dotenv import load_dotenv
-from .reinforcement_learner import ReinforcementLearner # Import the ReinforcementLearner
+from reinforcement_learner import ReinforcementLearner # Import the ReinforcementLearner
 
 load_dotenv() # Load environment variables for GROQ_API_KEY
 
@@ -131,7 +131,7 @@ class ScoreRequest(BaseModel):
 class SimulationResult(BaseModel):
     product_id: str
     final_trust_score: float
-    fraud_signals: List[str]
+    fraud_signals: list[str]
     confidence: float
     explanation: str
 
@@ -157,7 +157,7 @@ async def analyze_data(request: AnalysisRequest):
         logger.error(f"❌ Error in /analyze: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/simulate", response_model=List[SimulationResult])
+@app.post("/simulate", response_model=list[SimulationResult])
 async def simulate_fraud_detection():
     """
     Runs the CrewAI swarm on 10 hardcoded synthetic product listings
