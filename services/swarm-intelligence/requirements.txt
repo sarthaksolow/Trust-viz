@@ -1,15 +1,35 @@
-python-dotenv
-fastapi
-uvicorn
-confluent_kafka
-pydantic
-fastapi-utils
-typing-inspect
-requests # For sync HTTP requests if agents need to call other services
-aiohttp # For async HTTP requests if agents need to call other services
-scikit-learn
-pandas # Often useful for data handling with scikit-learn
-faiss-cpu # For in-memory vector database
-crewai
-langchain-groq
-streamlit
+# FastAPI and web server dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# CrewAI and LangChain dependencies  
+crewai==0.41.1
+crewai-tools==0.4.26
+langchain-groq==0.1.9
+langchain-core==0.1.52
+langchain-community==0.0.38
+
+# Machine Learning and Data Science
+scikit-learn==1.3.2
+pandas==2.1.4
+numpy==1.24.4
+joblib==1.3.2
+
+# Kafka (optional - replaced with in-memory queues)
+confluent-kafka==2.3.0
+
+# Utilities
+python-dotenv==1.0.0
+streamlit==1.28.2
+
+# Optional: FAISS for vector similarity (if needed later)
+# faiss-cpu==1.7.4
+
+# JSON and file handling (built-in)
+# logging (built-in)
+# threading (built-in)
+# datetime (built-in)
+# random (built-in)
+# os (built-in)

@@ -1,17 +1,17 @@
 import os
-from crewai import Agent, Task, Crew, Process
+from crewai import Agent, Task, Crew, Process, LLM
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import logging
 import json
 import random
-from crewai.tools import tool # Import tool decorator
+from crewai.tools import tool
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
-import joblib # For saving/loading the model
+import joblib
 
-load_dotenv() # Load environment variables from .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -72,10 +72,9 @@ def initialize_isolation_forest_model():
             logger.warning(f"Failed to load Isolation Forest model: {e}. Training a new one.")
     
     # If no model or failed to load, train a simple one
-    # This is a placeholder for a real-world training pipeline
     rng = np.random.RandomState(42)
     X = 0.3 * rng.randn(100, 2)
-    X_train = np.r_[X + 2, X - 2] # Normal data
+    X_train = np.r_[X + 2, X - 2]
     
     # Add some outliers
     X_outliers = rng.uniform(low=-6, high=6, size=(20, 2))
@@ -98,30 +97,26 @@ def run_isolation_forest(structured_data_json: str) -> str:
     """
     try:
         data = json.loads(structured_data_json)
-        # Convert dictionary to pandas DataFrame for IsolationForest
-        # Ensure consistent feature order and handle missing values
-        feature_names = ['price', 'quantity', 'return_refund_ratios', 'complaint_count'] # Example features
+        feature_names = ['price', 'quantity', 'return_refund_ratios', 'complaint_count']
         
         # Create a DataFrame with a single row for the current data point
-        # Fill missing features with a default (e.g., 0 or mean/median from training data)
         input_df = pd.DataFrame([data])
         
         # Align columns with expected feature names, filling missing with 0
         for col in feature_names:
             if col not in input_df.columns:
-                input_df[col] = 0.0 # Or a more appropriate default/imputation
+                input_df[col] = 0.0
         
-        input_df = input_df[feature_names] # Ensure order
+        input_df = input_df[feature_names]
 
         # Predict anomaly score (-1 for outlier, 1 for inlier)
-        # decision_function gives the raw anomaly score
         anomaly_score = isolation_forest_model.decision_function(input_df)[0]
         is_outlier = isolation_forest_model.predict(input_df)[0] == -1
         
         result = {
             "anomaly_score": float(anomaly_score),
             "is_outlier": bool(is_outlier),
-            "confidence": max(0.0, min(1.0, 1 - (anomaly_score / 0.5))) # Simple confidence mapping
+            "confidence": max(0.0, min(1.0, 1 - (anomaly_score / 0.5)))
         }
         logger.info(f"Isolation Forest result: {result}")
         return json.dumps(result)
@@ -129,22 +124,63 @@ def run_isolation_forest(structured_data_json: str) -> str:
         logger.error(f"Error running Isolation Forest: {e}")
         return json.dumps({"error": str(e), "anomaly_score": 0.0, "is_outlier": False, "confidence": 0.0})
 
-# Initialize Groq LLM
-try:
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key:
-        raise ValueError("GROQ_API_KEY not found in environment variables.")
-    
-    groq_model_name = os.getenv("GROQ_MODEL_NAME", "llama-3-8b-instruct") # Default to llama-3-8b-instruct
-    
-    groq_llm = ChatGroq(temperature=0, groq_api_key=groq_api_key, model_name=groq_model_name)
-    logger.info(f"Groq LLM initialized successfully with model: {groq_model_name}.")
-except Exception as e:
-    logger.error(f"Error initializing Groq LLM: {e}")
-    groq_llm = None # Handle case where LLM fails to initialize
+# Initialize Groq LLM with proper configuration
+def initialize_groq_llm():
+    try:
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            raise ValueError("GROQ_API_KEY not found in environment variables.")
+        
+        # Use the exact model name without provider prefix for langchain_groq
+        groq_model_name = os.getenv("GROQ_MODEL_NAME", "llama-3.1-8b-instant")
+        
+        # Initialize ChatGroq with proper parameters
+        groq_llm = ChatGroq(
+            temperature=0,
+            groq_api_key=groq_api_key,
+            model_name=groq_model_name,
+            max_tokens=4096,  # Set reasonable token limit
+            timeout=60,       # Set timeout
+        )
+        
+        logger.info(f"Groq LLM initialized successfully with model: {groq_model_name}")
+        return groq_llm
+        
+    except Exception as e:
+        logger.error(f"Error initializing Groq LLM: {e}")
+        return None
+
+# Alternative: Use CrewAI's built-in LLM configuration
+def initialize_crewai_groq_llm():
+    try:
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            raise ValueError("GROQ_API_KEY not found in environment variables.")
+        
+        # Set environment variables for CrewAI
+        os.environ["GROQ_API_KEY"] = groq_api_key
+        
+        # For CrewAI, you might need to use a different approach
+        from langchain_groq import ChatGroq
+        
+        groq_llm = ChatGroq(
+            model="llama-3.1-8b-instant",  # No provider prefix needed for langchain_groq
+            temperature=0,
+            api_key=groq_api_key
+        )
+        
+        logger.info("CrewAI Groq LLM initialized successfully")
+        return groq_llm
+        
+    except Exception as e:
+        logger.error(f"Error initializing CrewAI Groq LLM: {e}")
+        return None
+
+# Try both initialization methods
+groq_llm = initialize_groq_llm() or initialize_crewai_groq_llm()
 
 class FraudDetectionAgents:
-    def __init__(self, dynamic_prompts: dict[str, str] = None):
+    def __init__(self, dynamic_prompts: dict = None):
         if not groq_llm:
             raise RuntimeError("Groq LLM not initialized. Cannot create agents.")
         self.dynamic_prompts = dynamic_prompts if dynamic_prompts is not None else {}
@@ -174,7 +210,7 @@ class FraudDetectionAgents:
             verbose=True,
             allow_delegation=False,
             llm=groq_llm,
-            tools=[run_isolation_forest, log_pattern_memory] # Add Isolation Forest tool
+            tools=[run_isolation_forest, log_pattern_memory]
         )
 
     def review_agent(self):
@@ -216,16 +252,16 @@ class FraudDetectionAgents:
     def orchestrator_agent(self):
         return Agent(
             role='Fraud Consensus Agent',
-            goal='Consolidate the findings from Price, Review, Seller, and Image agents to produce a final, comprehensive fraud assessment.',
+            goal='Consolidate the findings from Price, Review, Seller, Image, and Anomaly agents to produce a final, comprehensive fraud assessment.',
             backstory="""You are the central intelligence unit, responsible for synthesizing diverse fraud signals. You weigh the evidence from each specialized agent, identify conflicting information, and derive a conclusive trust score. Your final output must be a structured JSON object, detailing all identified signals, the overall confidence in the assessment, and a clear explanation of the decision.""",
             verbose=True,
-            allow_delegation=True, # Can delegate back to other agents if needed for clarification
+            allow_delegation=True,
             llm=groq_llm
         )
 
 class FraudDetectionTasks:
     def __init__(self):
-        pass # Tasks will be defined dynamically based on input
+        pass
 
     def analyze_price(self, agent: Agent, product_data: dict):
         return Task(
@@ -240,7 +276,7 @@ class FraudDetectionTasks:
             
             Additionally, with a 20% chance, perform an exploratory heuristic. For example, check if the current price is an exact match to a price from 6 months ago, which could indicate a relisting attempt after a ban. If an exploratory signal is found, use the 'Log Pattern Memory' tool to log it as a JSON string, including 'product_id' and 'seller_id'.
             
-            After completing your analysis, log your final output (fraud score and explanation) using the standard Python logging module (e.g., `logger.info(json.dumps({'agent': 'PriceAgent', 'output': your_json_output}))`) before returning it.
+            Return your output as a JSON object with 'fraud_score' (float) and 'explanation' (str).
             """,
             agent=agent,
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
@@ -257,7 +293,7 @@ class FraudDetectionTasks:
 
             Additionally, with a 20% chance, perform an exploratory heuristic. For example, check for burst review patterns (multiple reviews from different users for the same product within a very short timeframe). If an exploratory signal is found, use the 'Log Pattern Memory' tool to log it as a JSON string, including 'product_id' and 'seller_id'.
             
-            After completing your analysis, log your final output (fraud score and explanation) using the standard Python logging module (e.g., `logger.info(json.dumps({'agent': 'ReviewAgent', 'output': your_json_output}))`) before returning it.
+            Return your output as a JSON object with 'fraud_score' (float) and 'explanation' (str).
             """,
             agent=agent,
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
@@ -276,7 +312,7 @@ class FraudDetectionTasks:
 
             Additionally, with a 20% chance, perform an exploratory heuristic. For example, check for sudden category switches by the seller (e.g., from electronics to luxury goods). If an exploratory signal is found, use the 'Log Pattern Memory' tool to log it as a JSON string, including 'product_id' and 'seller_id'.
             
-            After completing your analysis, log your final output (fraud score and explanation) using the standard Python logging module (e.g., `logger.info(json.dumps({'agent': 'SellerAgent', 'output': your_json_output}))`) before returning it.
+            Return your output as a JSON object with 'fraud_score' (float) and 'explanation' (str).
             """,
             agent=agent,
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
@@ -293,7 +329,7 @@ class FraudDetectionTasks:
 
             Additionally, with a 20% chance, perform an exploratory heuristic. For example, check if the image has unusually high compression artifacts for its resolution, which could indicate multiple re-encodings or manipulation. If an exploratory signal is found, use the 'Log Pattern Memory' tool to log it as a JSON string, including 'product_id' and 'seller_id'.
             
-            After completing your analysis, log your final output (fraud score and explanation) using the standard Python logging module (e.g., `logger.info(json.dumps({'agent': 'ImageAgent', 'output': your_json_output}))`) before returning it.
+            Return your output as a JSON object with 'fraud_score' (float) and 'explanation' (str).
             """,
             agent=agent,
             expected_output="A JSON object with 'fraud_score' (float) and 'explanation' (str). If an exploratory signal was logged, mention it in the explanation."
@@ -302,87 +338,89 @@ class FraudDetectionTasks:
     def analyze_anomalies(self, agent: Agent, product_data: dict):
         # Extract relevant numerical fields for Isolation Forest
         structured_fields = {
-            "price": product_data.get("price", 0.0),
-            "quantity": product_data.get("quantity", 0),
-            "return_refund_ratios": product_data.get("return_refund_ratios", 0.0),
+            "price": float(product_data.get("price", 0.0)),
+            "quantity": int(product_data.get("quantity", 0)),
+            "return_refund_ratios": float(product_data.get("return_refund_ratios", 0.0)),
             "complaint_count": len(product_data.get("complaint_history", []))
         }
         return Task(
             description=f"""Analyze the structured numerical data for product {product_data.get('product_id', 'N/A')} using the 'Run Isolation Forest' tool.
             Structured Data: {json.dumps(structured_fields)}
             
+            Use the 'Run Isolation Forest' tool with this JSON data to detect anomalies.
             If an outlier is detected, produce an anomaly signal with a confidence score.
             Provide a fraud score (0-1) and a brief explanation, including whether an anomaly was detected and its confidence.
             
-            After completing your analysis, log your final output (fraud score, explanation, anomaly_detected, anomaly_confidence) using the standard Python logging module (e.g., `logger.info(json.dumps({'agent': 'AnomalyDetectionAgent', 'output': your_json_output}))`) before returning it.
+            Return your output as a JSON object with 'fraud_score' (float), 'explanation' (str), 'anomaly_detected' (bool), and 'anomaly_confidence' (float).
             """,
             agent=agent,
             expected_output="A JSON object with 'fraud_score' (float), 'explanation' (str), 'anomaly_detected' (bool), and 'anomaly_confidence' (float)."
         )
 
-    def consolidate_fraud_assessment(self, agent: Agent, price_analysis: str, review_analysis: str, seller_analysis: str, image_analysis: str, anomaly_analysis: str):
+    def consolidate_fraud_assessment(self, agent: Agent, product_data: dict):
         return Task(
-            description=f"""Consolidate the following fraud analyses into a final assessment:
-            Price Analysis: {price_analysis}
-            Review Analysis: {review_analysis}
-            Seller Behavior Analysis: {seller_analysis}
-            Image Authenticity Analysis: {image_analysis}
-            Anomaly Detection Analysis: {anomaly_analysis}
->>>>>>> Stashed changes
-
-            Based on these inputs, determine an overall trust score (0-1, where 0 is high fraud risk, 1 is no fraud risk),
-            list all significant fraud signals identified, provide a confidence level for your assessment (0-1),
-            and give a comprehensive explanation for the final decision. This explanation MUST synthesize and explicitly reference the key findings and explanations from each individual agent (Price, Review, Seller, Image, Anomaly).
-
-            Your final output MUST be a structured JSON object with the following keys:
-            'final_trust_score': float (0-1)
-            'fraud_signals': list of strings
-            'confidence': float (0-1)
-            'explanation': string
+            description=f"""Consolidate all previous analyses into a final assessment for product {product_data.get('product_id', 'N/A')}.
+            
+            Based on the outputs from the Price, Review, Seller, Image, and Anomaly Detection agents, determine:
+            1. An overall trust score (0-1, where 0 is high fraud risk, 1 is no fraud risk)
+            2. A list of all significant fraud signals identified
+            3. A confidence level for your assessment (0-1)
+            4. A comprehensive explanation that synthesizes findings from all agents
+            
+            Your final output MUST be a valid JSON object with these exact keys:
+            - 'final_trust_score': float (0-1)
+            - 'fraud_signals': list of strings
+            - 'confidence': float (0-1)
+            - 'explanation': string that summarizes all agent findings
             """,
             agent=agent,
-            expected_output="A JSON object with 'final_trust_score' (float), 'fraud_signals' (list of strings), 'confidence' (float), and 'explanation' (string) that includes summaries from all agents."
+            expected_output="A valid JSON object with 'final_trust_score' (float), 'fraud_signals' (list of strings), 'confidence' (float), and 'explanation' (string) that includes summaries from all agents."
         )
 
 class FraudDetectionCrew:
-    def __init__(self, product_data: dict, dynamic_prompts: dict[str, str] = None):
+    def __init__(self, product_data: dict, dynamic_prompts: dict = None):
         self.agents = FraudDetectionAgents(dynamic_prompts)
         self.tasks = FraudDetectionTasks()
         self.product_data = product_data
 
     def run(self):
-        price_agent = self.agents.price_agent()
-        review_agent = self.agents.review_agent()
-        seller_agent = self.agents.seller_agent()
-        image_agent = self.agents.image_agent()
-        anomaly_agent = self.agents.anomaly_detection_agent() # New agent
-        orchestrator_agent = self.agents.orchestrator_agent()
+        try:
+            # Create agents
+            price_agent = self.agents.price_agent()
+            review_agent = self.agents.review_agent()
+            seller_agent = self.agents.seller_agent()
+            image_agent = self.agents.image_agent()
+            anomaly_agent = self.agents.anomaly_detection_agent()
+            orchestrator_agent = self.agents.orchestrator_agent()
 
-        price_task = self.tasks.analyze_price(price_agent, self.product_data)
-        review_task = self.tasks.analyze_reviews(review_agent, self.product_data)
-        seller_task = self.tasks.analyze_seller_behavior(seller_agent, self.product_data)
-        image_task = self.tasks.analyze_image(image_agent, self.product_data)
-        anomaly_task = self.tasks.analyze_anomalies(anomaly_agent, self.product_data) # New task
+            # Create tasks
+            price_task = self.tasks.analyze_price(price_agent, self.product_data)
+            review_task = self.tasks.analyze_reviews(review_agent, self.product_data)
+            seller_task = self.tasks.analyze_seller_behavior(seller_agent, self.product_data)
+            image_task = self.tasks.analyze_image(image_agent, self.product_data)
+            anomaly_task = self.tasks.analyze_anomalies(anomaly_agent, self.product_data)
+            orchestrator_task = self.tasks.consolidate_fraud_assessment(orchestrator_agent, self.product_data)
 
-        # The orchestrator task depends on the output of all other tasks
-        orchestrator_task = self.tasks.consolidate_fraud_assessment(
-            orchestrator_agent,
-            price_analysis=price_task,
-            review_analysis=review_task,
-            seller_analysis=seller_task,
-            image_analysis=image_task,
-            anomaly_analysis=anomaly_task # Include new anomaly task
-        )
+            # Create crew with sequential process
+            crew = Crew(
+                agents=[price_agent, review_agent, seller_agent, image_agent, anomaly_agent, orchestrator_agent],
+                tasks=[price_task, review_task, seller_task, image_task, anomaly_task, orchestrator_task],
+                process=Process.sequential,
+                verbose=True
+            )
 
-        crew = Crew(
-            agents=[price_agent, review_agent, seller_agent, image_agent, anomaly_agent, orchestrator_agent],
-            tasks=[price_task, review_task, seller_task, image_task, anomaly_task, orchestrator_task],
-            process=Process.hierarchical,
-            verbose=True
-        )
-
-        result = crew.kickoff()
-        return result
+            result = crew.kickoff()
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error running crew: {e}")
+            # Return a fallback JSON response
+            fallback_result = {
+                "final_trust_score": 0.0,
+                "fraud_signals": ["crew_execution_failed"],
+                "confidence": 0.0,
+                "explanation": f"CrewAI execution failed: {str(e)}"
+            }
+            return json.dumps(fallback_result)
 
 if __name__ == "__main__":
     # Example usage
@@ -401,8 +439,7 @@ if __name__ == "__main__":
         "return_refund_ratios": 0.05,
         "complaint_history": [],
         "perceptual_ai_score": 0.85,
-        "quantity": 50, # Added for anomaly detection
-        "complaint_history": [{"type": "low"}, {"type": "medium"}] # Added for anomaly detection
+        "quantity": 50
     }
     
     try:
