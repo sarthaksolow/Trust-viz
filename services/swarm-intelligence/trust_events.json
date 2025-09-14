@@ -1,0 +1,299 @@
+[
+  {
+    "product_id": "prod_0",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_1",
+    "trust_score": 0.58,
+    "confidence": 0.7,
+    "fraud_signals": [
+      "Seller has been active for 63 days and has made 242 sales, no clear red flags.",
+      "Product has mixed reviews with 'Great!' and 'Looks fake'.",
+      "Recent review contains 'Bad', which can be indicative of a potential issue.",
+      "Product has a relatively good price of 38, which might be suspicious for being too low."
+    ]
+  },
+  {
+    "product_id": "prod_2",
+    "trust_score": 0.7,
+    "confidence": 0.9,
+    "fraud_signals": [
+      "Bad",
+      "Looks fake"
+    ]
+  },
+  {
+    "product_id": "prod_3",
+    "trust_score": 0.3,
+    "confidence": 0.7,
+    "fraud_signals": [
+      "review contains suspicious word \"fake\"",
+      "seller has bad review",
+      "seller has low account age"
+    ]
+  },
+  {
+    "product_id": "prod_4",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_5",
+    "trust_score": 0.3,
+    "confidence": 0.7,
+    "fraud_signals": [
+      "Bad review from customer",
+      "Short seller history (< 6 months)",
+      "Recent review contains suspicious keyword 'fake'"
+    ]
+  },
+  {
+    "product_id": "prod_6",
+    "trust_score": 0.5,
+    "confidence": 0.75,
+    "fraud_signals": [
+      "Recent review contains negative words such as 'Bad' indicating potential fraudulent activity",
+      "Recent review contains ambiguous text 'Looks fake' indicating potential fraudulent activity",
+      "Seller account is very young at 47 days old indicating potential fraudulent activity"
+    ]
+  },
+  {
+    "product_id": "prod_7",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_8",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_9",
+    "trust_score": 0.5,
+    "confidence": 0.7,
+    "fraud_signals": [
+      "Recent reviews include 'Bad'",
+      "Recent reviews include 'Looks fake'",
+      "Seller history shows account age of less than 6 months",
+      "Seller history shows less than 5 sales"
+    ]
+  },
+  {
+    "product_id": "prod_0",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_1",
+    "trust_score": 0.3,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "Product price is low ($111)",
+      "Seller has short history (account age: 288 days)",
+      "Seller has made a large number of sales (342 sales)",
+      "Product has negative reviews ('Bad', 'Looks fake')",
+      "Product has positive review ('Great!')",
+      "Seller has a low quantity of products (10)"
+    ]
+  },
+  {
+    "product_id": "prod_2",
+    "trust_score": 0.3,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "Negative review",
+      "Suspicious account behavior (recent_reviews contains 'Bad' and 'Looks fake')",
+      "Seller's account is not verified (account_age_days = 22 is suspiciously short)",
+      "Seller has a low total sales (total_sales = 31)"
+    ]
+  },
+  {
+    "product_id": "prod_3",
+    "trust_score": 0.4,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "Quantity is unusually high (> 20)",
+      "Seller has been selling on the platform for a long time (account_age_days: 179)",
+      "Seller has made a high number of sales (total_sales: 253)",
+      "Recent reviews seem inconsistent ('Great! - 'Bad - 'Looks fake)",
+      "Price is low (price: 50)"
+    ]
+  },
+  {
+    "product_id": "prod_4",
+    "trust_score": 0.3,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "seller has a fake item review",
+      "seller has a low quantity of a single product",
+      "seller's account is relatively young"
+    ]
+  },
+  {
+    "product_id": "prod_5",
+    "trust_score": 0.4,
+    "confidence": 0.7,
+    "fraud_signals": [
+      "Recent reviews contain ambiguous and negative language.",
+      "Seller has been active for less than a year."
+    ]
+  },
+  {
+    "product_id": "prod_6",
+    "trust_score": 0.7,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "Recent reviews contain mixed signals",
+      "Low account age",
+      "Low total sales"
+    ]
+  },
+  {
+    "product_id": "prod_7",
+    "trust_score": 0.4,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "Negative review: \"Bad\"",
+      "Negative review: \"Looks fake\"",
+      "Low seller account age: 107 days",
+      "Low quantity: 32"
+    ]
+  },
+  {
+    "product_id": "prod_8",
+    "trust_score": 0.67,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "Recent reviews are mixed",
+      "Seller is experienced but has some sales",
+      "Price is not unusually high or low",
+      "Quantity is reasonable"
+    ]
+  },
+  {
+    "product_id": "prod_9",
+    "trust_score": 0.4,
+    "confidence": 0.9,
+    "fraud_signals": [
+      "Recent reviews contain potentially fake or misleading information",
+      "Seller has a short account history"
+    ]
+  },
+  {
+    "product_id": "prod_0",
+    "trust_score": 0.25,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "Recent reviews contain mixed feedback (positive and negative)",
+      "Recent reviews contain a negative review ('Bad')",
+      "Recent reviews contain a subjective review ('Looks fake')",
+      "Seller has been active for 86 days",
+      "Seller has made 400 total sales"
+    ]
+  },
+  {
+    "product_id": "prod_1",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_2",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_3",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_4",
+    "trust_score": 0.35,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "recent_reviews mention a bad review",
+      "price is relatively low",
+      "seller does not have extensive history in sales",
+      "seller does not have extensive history in the market (account_age_days: 226 is average, but 226 is relatively low in some specific markets)"
+    ]
+  },
+  {
+    "product_id": "prod_5",
+    "trust_score": 0.5,
+    "confidence": 0.5,
+    "fraud_signals": [
+      "ParseError"
+    ]
+  },
+  {
+    "product_id": "prod_6",
+    "trust_score": 0.3,
+    "confidence": 0.7,
+    "fraud_signals": [
+      "Suspicious review: Looks fake",
+      "Recently active seller (79 days and more sales)",
+      "Seller history of total sales: 485"
+    ]
+  },
+  {
+    "product_id": "prod_7",
+    "trust_score": 0.4,
+    "confidence": 0.8,
+    "fraud_signals": [
+      "Seller account has been active for over a year (may indicate legitimacy)",
+      "Recent reviews contain both positive and negative sentiments (indicative of human interaction)",
+      "Low quantity of reviews (may indicate low sales or a new seller)",
+      "Seller has a short overall account age (may indicate low credibility)",
+      "Recent reviews mention 'Looks fake' (raises red flags for fraud)",
+      "One review is labeled 'Bad' (indicates potential dissatisfaction)",
+      "Seller history shows a moderate overall age (may suggest a mid-level seller)",
+      "Seller has a moderate amount of total sales (may indicate some level of credibility)"
+    ]
+  },
+  {
+    "product_id": "prod_8",
+    "trust_score": 0.6,
+    "confidence": 0.7,
+    "fraud_signals": [
+      "Recent reviews contain a bad review",
+      "Seller has an account of moderate age (168 days)",
+      "Seller's total sales are relatively low (448)"
+    ]
+  },
+  {
+    "product_id": "prod_9",
+    "trust_score": 0.55,
+    "confidence": 0.85,
+    "fraud_signals": [
+      "Recent reviews contain negative sentiment",
+      "Recent reviews contain uncertain or fake reviews",
+      "Seller has a relatively low number of total sales"
+    ]
+  }
+]

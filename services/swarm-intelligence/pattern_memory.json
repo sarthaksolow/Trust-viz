@@ -7,5 +7,21 @@
   {
     "product_id": "test_prod_001",
     "explore_field": "quantity"
+  },
+  {
+    "product_id": "prod_2",
+    "explore_field": "product_id"
+  },
+  {
+    "product_id": "prod_3",
+    "explore_field": "product_id"
+  },
+  {
+    "product_id": "prod_7",
+    "explore_field": "product_id"
+  },
+  {
+    "product_id": "prod_8",
+    "explore_field": "price"
   }
 ]

@@ -187,13 +187,14 @@ elif page == "Simulation":
                 for result in results:
                     df_data.append({
                         "Product ID": result["product_id"],
-                        "Trust Score": f"{result['final_trust_score']:.3f}",
-                        "Fraud Risk": "🚨 High" if result['final_trust_score'] < 0.3 else 
-                                     "⚠️ Medium" if result['final_trust_score'] < 0.7 else "✅ Low",
-                        "Confidence": f"{result['confidence']:.3f}",
-                        "Signals": len(result['fraud_signals']),
-                        "Top Signal": result['fraud_signals'][0] if result['fraud_signals'] else "None"
+                        "Trust Score": f"{result['details']['trust_score']:.3f}",
+                        "Fraud Risk": "🚨 High" if result['details']['trust_score'] < 0.3 else 
+                                    "⚠️ Medium" if result['details']['trust_score'] < 0.7 else "✅ Low",
+                        "Confidence": f"{result['details']['confidence']:.3f}",
+                        "Signals": len(result['details']['fraud_signals']),
+                        "Top Signal": result['details']['fraud_signals'][0] if result['details']['fraud_signals'] else "None"
                     })
+
                 
                 df = pd.DataFrame(df_data)
                 st.dataframe(df, use_container_width=True)
@@ -201,17 +202,21 @@ elif page == "Simulation":
                 # Detailed results
                 st.subheader("Detailed Results")
                 for result in results:
-                    with st.expander(f"Product {result['product_id']} - Trust: {result['final_trust_score']:.3f}"):
+                    with st.expander(f"Product {result['product_id']} - Trust: {result['details']['trust_score']:.3f}"):
                         col1, col2 = st.columns(2)
-                        
+
                         with col1:
                             st.write("**Fraud Signals:**")
-                            for signal in result['fraud_signals']:
-                                st.write(f"• {signal}")
-                        
+                            fraud_signals = result.get("details", {}).get("fraud_signals", [])
+                            if fraud_signals:
+                                for signal in fraud_signals:
+                                    st.write(f"• {signal}")
+                            else:
+                                st.write("No fraud signals detected")
+
                         with col2:
                             st.write("**Explanation:**")
-                            st.write(result['explanation'])
+                            st.write(result.get("details", {}).get("explanation", "No explanation available"))
 
 # System Health page
 elif page == "System Health":
