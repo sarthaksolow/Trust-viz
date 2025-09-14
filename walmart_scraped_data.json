@@ -1,0 +1,562 @@
+[
+  {
+    "url": "https://www.walmart.com/ip/Apple-iPhone-14-128GB-Blue-Verizon/1736740710",
+    "title": "Sony PlayStation 5 Video Game Console",
+    "description": "The PS5™ console unleashes new gaming possibilities that you never anticipated. Experience lightning fast loading with an ultra-high speed SSD, deeper immersion with support for haptic feedback, adaptive triggers, and 3D Audio*, and an all-new generation of incredible PlayStation® games.",
+    "price": {
+      "current": 499,
+      "currency": "USD",
+      "display": "$499.00",
+      "was_price": null,
+      "savings": null
+    },
+    "images": [
+      "https://i5.walmartimages.com/seo/Sony-PlayStation-5-Video-Game-Console_9333b8cd-773e-49d4-8e85-51c4114fcd56.bbf5c4e4f3746ddc28ac982117cdbf9a.jpeg",
+      "https://i5.walmartimages.com/asr/985f6fea-1255-44f9-a4b1-d26e62ebc6f9.08c17391d3df289f6842e270f7180eec.jpeg",
+      "https://i5.walmartimages.com/asr/69c08bf8-207b-4669-81f2-acfa950c4a94.d51028ed9404147f4050401047a6279f.jpeg",
+      "https://i5.walmartimages.com/asr/b3a883cc-c414-4818-a687-de74d04f5349.ad369bba070eb7d13a262d55b1a3980d.jpeg"
+    ],
+    "specifications": {
+      "Brand": "PlayStation",
+      "Model": "CFI-1215A01X",
+      "UPC": "711719556169"
+    },
+    "brand": "PlayStation",
+    "model": "CFI-1215A01X",
+    "sku": "4S6KN6TWU0A0",
+    "upc": "711719556169",
+    "rating": 4.8,
+    "review_count": 4499,
+    "availability": "OUT_OF_STOCK",
+    "category": [
+      {
+        "name": "Video Games",
+        "url": "/cp/video-games/2636"
+      },
+      {
+        "name": "PlayStation",
+        "url": "/cp/playstation/5170403"
+      },
+      {
+        "name": "PlayStation 5",
+        "url": "/cp/playstation-5/3475115"
+      },
+      {
+        "name": "PlayStation 5 (PS5) Consoles",
+        "url": "/cp/playstation-5-ps5-consoles/2762884"
+      }
+    ],
+    "seller": "Walmart.com",
+    "scraped_at": "2025-09-15 01:21:39",
+    "reviews": [
+      {
+        "review_id": "396282776",
+        "rating": 5,
+        "title": null,
+        "text": "cam in a timely manner my son love it the only rging i would suggest is the box the playstation 5 comes in they should have something to let people know the other end of the box opens and thats where the cords and controller is located we thought they forgot to put the accessories.",
+        "author": "Teresa",
+        "date": "8/24/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "300369795",
+        "rating": 5,
+        "title": "Love my ps5!",
+        "text": "After waiting years of it being out of stock I finally got mine with my Tax return. The console itself is large but yet its light, threw me off but it works so well as I expected. I have being playing playstion snice PS1 so this was definitely a great buy and I al ready to see what games are coming in the future!!!!!",
+        "author": "Aerogoth",
+        "date": "2/12/2023",
+        "helpful_count": 26,
+        "not_helpful_count": 4,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "301666329",
+        "rating": 5,
+        "title": "Absolutely love it 😍😍😍",
+        "text": "I have owned and loved every PlayStation since the PS1. I ordered this on February 17 2023 with a copy of the Dead Space remake and I absolutely love it. It comes with a game called Astro's Playroom pre-installed which is great because it shows you all the stuuf the DualSense 5 controller can do. It's also just a fun game to play to pass the time. You could easily spend a couple of hours at a time playing Astro's Playroom. I highly recommend buying the PS5 disc edition.",
+        "author": "Chris",
+        "date": "3/3/2023",
+        "helpful_count": 14,
+        "not_helpful_count": 1,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "300523008",
+        "rating": 5,
+        "title": "Ps5 Disc Edition",
+        "text": "Im so happy with my ps5. After the release of Hogwarts Legacy, I just couldn’t wait any longer to get my ps5. I was able to get one shipped and sold by Walmart directly while they were in stock for $499. I paired my purchase with a starlight blue cover and matching controller. I couldn’t be happier, especially because the scalpers didn’t get my money. The ps5 itself is in perfect condition. Box undamaged and unopened. Extremely happy to finally got my hands on one.",
+        "author": "Kyle",
+        "date": "2/15/2023",
+        "helpful_count": 13,
+        "not_helpful_count": 2,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "296013686",
+        "rating": 5,
+        "title": "PlayStation did it again! Two thumbs up!",
+        "text": "The PS5 is awesome! I have had a ps4 for over 4 years and it was time to upgrade. And we’ll it’s totally worth it. Graphics are amazing, the speed on the console is crazy!",
+        "author": "JohnPaul",
+        "date": "12/20/2022",
+        "helpful_count": 10,
+        "not_helpful_count": 3,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "294198020",
+        "rating": 4,
+        "title": "Happy I finally got one, but....",
+        "text": "I was just happy that after 2 years i was able to get one, but the fact that money was taken out only to be returned and then taken out again once the item shipped was unappreciated, if the money was taken out just keep it! no need to \"test to see if the payment system worked\" you already had the money once I ordered it, keep it!",
+        "author": "Mae",
+        "date": "12/4/2022",
+        "helpful_count": 2,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "292262228",
+        "rating": 3,
+        "title": "Roll the Dice With the Swiss Cheese Box",
+        "text": "The box that Walmart ships the PS5 in is absolutely asinine. It has 2 decent size cutouts over the barcodes, which are literal holes in the shipping box itself. These holes expose nearby wording which identify the contents as a PlayStation. Luckily, mine was not stolen, but I was also home to receive it. \n\nFurthermore, either my courier thought the holes made great handles or the holes allowed the package to become snagged on something. Either way, not only was the shipping box torn open, but this also completely ripped up the bottom of the PS5 packaging.\n\nI've never made a stink before, no matter how poor the packaging. However, when I spend $550 on a single item, I expect it to arrive protected....or, at the very least, in a box with all its sides. It's just common sense.",
+        "author": "Brandy",
+        "date": "11/18/2022",
+        "helpful_count": 10,
+        "not_helpful_count": 3,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "292944678",
+        "rating": 1,
+        "title": "Where is PlayStation?!",
+        "text": "Well I was suppose to receive this by November 15th, here it is November 24th and no PS5! When I look at the tracking of it all it says is placed! I call Walmart and they tell me to cancel it and buy another one! Are you serious?! So I have to pay atleast $60 more?! I want the PS5 that I originally bought! My mother gave me money toward this on October 16th, she passed on October 18th very unexpectedly. This PlayStation means a lot to my son, plus he works at Walmart! I can't believe I'm have this goose chase like this when I should be mourning my mother, not worried about if my son is going to get his PlayStation or not! I'll gladly change my review when I get the console!",
+        "author": "Krystal",
+        "date": "11/24/2022",
+        "helpful_count": 13,
+        "not_helpful_count": 9,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "355537338",
+        "rating": 1,
+        "title": "Never got package",
+        "text": "Zero stars!!! Never received package!!! Still waiting for UPS to finish investigating what happened to it, Walmart was no help at all, if u want a ps5 get it in store don't buy online!!! Walmart will just rip u off!!!",
+        "author": "Aj",
+        "date": "8/28/2024",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "290864469",
+        "rating": 1,
+        "title": "AWFUL AWFUL AWFUL",
+        "text": "Your delivery was way late. The box was so damaged that I was worried that it my PS5 was going to be broken. And no it was not due to shipping. It was inside the shipping box. The damage occurred before the unit was placed in the shipping box as the shipping box was undamaged. I will never ever order from Walmart again!",
+        "author": "Chris",
+        "date": "11/8/2022",
+        "helpful_count": 7,
+        "not_helpful_count": 5,
+        "verified_purchase": true,
+        "photos": []
+      }
+    ],
+    "total_reviews": 10,
+    "review_summary": {
+      "average_rating": 4.8,
+      "total_count": 4499,
+      "rating_distribution": {
+        "1": 3,
+        "2": 0,
+        "3": 1,
+        "4": 1,
+        "5": 5
+      }
+    }
+  },
+  {
+    "url": "https://www.walmart.com/ip/Sony-PlayStation-5-PS5-Video-Game-Console/363472942",
+    "title": "PlayStation 5 Console",
+    "description": "Play has no limits with the PlayStation 5 Console. The PS5 console unleashes new gaming possibilities that you never anticipated. Experience lightning fast loading with an ultra-high speed SSD, deeper immersion with support for haptic feedback, adaptive triggers, and 3D Audio, and an all-new generation of incredible PlayStation games. Harness the power of a custom CPU, GPU, and SSD with Integrated I/O that rewrite the rules of what a PlayStation console can do. Marvel at incredible graphics and experience new PS5 features. Discover a deeper gaming experience with support for haptic feedback, adaptive triggers, and 3D Audio technology. Maximize your play sessions with near-instant load times for PS5 games. And the custom integration of the PS5 console's systems lets creators pull data from the SSD so quickly that they can design games in ways never before possible. Play has no limits with the PlayStation 5 Console.",
+    "price": {
+      "current": 499,
+      "currency": "USD",
+      "display": "$499.00",
+      "was_price": null,
+      "savings": null
+    },
+    "images": [
+      "https://i5.walmartimages.com/seo/PlayStation-5-Console_b29e7500-cac2-4d1f-b4aa-5e0ebb3de124.c0b04249d968e2c1e5d25799b96ee0e3.jpeg",
+      "https://i5.walmartimages.com/asr/4e7deb33-3a02-4ec2-9fda-a07ea139f600.946f9cdaef0a37afef8dc18fa74288f1.jpeg"
+    ],
+    "specifications": {
+      "Brand": "PlayStation",
+      "Model": "CFI-1015A",
+      "UPC": "711719541028"
+    },
+    "brand": "PlayStation",
+    "model": "CFI-1015A",
+    "sku": "381J1IR9OWLC",
+    "upc": "711719541028",
+    "rating": 4.6,
+    "review_count": 6899,
+    "availability": "OUT_OF_STOCK",
+    "category": [
+      {
+        "name": "Video Games",
+        "url": "/cp/video-games/2636"
+      },
+      {
+        "name": "PlayStation",
+        "url": "/cp/playstation/5170403"
+      },
+      {
+        "name": "PlayStation 5",
+        "url": "/cp/playstation-5/3475115"
+      },
+      {
+        "name": "PlayStation 5 (PS5) Consoles",
+        "url": "/cp/playstation-5-ps5-consoles/2762884"
+      }
+    ],
+    "seller": "Walmart.com",
+    "scraped_at": "2025-09-15 01:22:26",
+    "reviews": [
+      {
+        "review_id": "255126182",
+        "rating": 5,
+        "title": "Next Gen gaming",
+        "text": "Loving this console. Amazing and fluid. only problem I have is the stand. seems like an after thought but is a painful engineering flaw to me. totally disrupts the flow and look of the console. it's especially awkward when you first try to install it. not a big deal it's just surprising. Can't wait to see the slim model.",
+        "author": "Mazdadriver88",
+        "date": "3/13/2021",
+        "helpful_count": 4,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "255971296",
+        "rating": 5,
+        "title": null,
+        "text": "I decided I would try to get a ps5 after I failed at getting the series x and I happened to manage to get one. The videos for the ps5 dont quite show the power and features it has to offer. The best way to experience the power of this system is to see it in person. Amazing graphics and loading speed. I'm happy that I decided to get this system.",
+        "author": "Jason",
+        "date": "3/22/2021",
+        "helpful_count": 3,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "242825560",
+        "rating": 5,
+        "title": "Really great console",
+        "text": "Really solid console. I had an issue with my PlayStation shutting down due to an error with the external hard drive, and PlayStation support helped me solve it under five minutes. There’s a wide category of free ps4 games to play for free if you have PlayStation plus which is great to start out until games are starting to be released. There’s also a free ps5 game with plus already as well. The new UI is refreshing and the controller is much better than I thought it would be.",
+        "author": null,
+        "date": "11/13/2020",
+        "helpful_count": 25,
+        "not_helpful_count": 16,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "242819005",
+        "rating": 4,
+        "title": "So frustrated with website.",
+        "text": "I have been on the website at all 3 launch times today, with a pc and my phone.   I have struggled with this website all the way through to the checkout process just to have the site lock up long enough for me to lose my product, every time. The website needs to be modified and beefed up to handle this kind of sale...  it is so maddening and frustrating.  I have had it in my cart 4 times just to have it spew error codes and pages in an endless nonsensical loop.",
+        "author": "Lisa",
+        "date": "11/13/2020",
+        "helpful_count": 52,
+        "not_helpful_count": 4,
+        "verified_purchase": false,
+        "photos": []
+      },
+      {
+        "review_id": "243038430",
+        "rating": 2,
+        "title": "Reboots Galore",
+        "text": "The PS5 will be an awesome console. I was able to play a few hours of fortnite and about an hour of Spider Man Miles Morales before my console rebooted and got the rebuilding database message for the first time. It has since rebooted 6 more times. I have not been able to play Cold War and have since uninstalled Cold War and Miles Morales. I haven't had any issues since. I of course did not spend $500  to play just fortnite. I know Sony is probably working on a patch right now, but it's still disappointing. If you have secured a console yet I wouldn't stress too much, the software is not stable at least for PS5 games in my theory.",
+        "author": "Brett",
+        "date": "11/14/2020",
+        "helpful_count": 13,
+        "not_helpful_count": 8,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "261656449",
+        "rating": 2,
+        "title": "Disc drive is not working right",
+        "text": "Bought this for my husband and we got it within a week of ordering. He has only used it one day and when he went to put a disc in to play the disc drive sounded like it was a weedwacker/trimmer that you use outside to work on lawns. It was so loud. My husband and I tried multiple disc and it made that noise every time. After about 10 minutes or so it would stop but after some time it would start back up again. He had a disc in while he downloaded content for it and was playing a digital game and after about an hour playing the digital game the consoles drive started getting really loud again. We didn’t figured it was cause the disc was still in there downloading content, but all of a sudden the disc came flinging out of the console. I’m very mad about the fact that I’m paying over a $1,000 to Walmart for a console that was supposed to be brand new and it doesn’t even work right before we even get to use it. Now I’m probably going to have to call Sony and see if they will either fix it or replace it. There’s no point in having a disc version of a console when the console won’t even keep your games in it, and 90% of your games are on disc. Very disappointed and honestly don’t know how I feel about ever buying another console or video game system from Walmart again.",
+        "author": "Terah",
+        "date": "5/29/2021",
+        "helpful_count": 6,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "244207319",
+        "rating": 2,
+        "title": "Add a better purchase system",
+        "text": "This is probably a great console and deserves the hype but there really needs to be a system like captcha and like a small questioning on it so that the rate of bots drops significantly. I mean it’s be so bad I had it in my cart and even pressed place order and it even showed when it will arrive and it still denied me. I mean I don’t wanna end up with the only option being to buy from retailers that sell at triple the price",
+        "author": "Aman",
+        "date": "11/25/2020",
+        "helpful_count": 4,
+        "not_helpful_count": 0,
+        "verified_purchase": false,
+        "photos": []
+      },
+      {
+        "review_id": "244257234",
+        "rating": 1,
+        "title": "Broken console with no way to exchange.",
+        "text": "How about instead of selling more, you fix exchange the broken ones that some of us have received. Mine wont power on. The only way for me to fix in a timely fashion is to buy another one and return. Walmart says they dont have it to exchange, yet more keep going on sale. Complete garbage.",
+        "author": "Justin",
+        "date": "11/26/2020",
+        "helpful_count": 81,
+        "not_helpful_count": 60,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "258956284",
+        "rating": 1,
+        "title": "1 month 2 days and 12 city's later. PS5 Journey",
+        "text": "The console it self is awesome. However I bought this march 18th 2021 it came April 20th 2021 the shipping box was not taped straight from Walmart and my PS5 box has a huge rip in the front of it. Shipping Bad costumer service was also bad no one could give me any information on where my order was. It also went through 12 different city's before getting to me. Would not recommend buying PS5 from walmart.com",
+        "author": "Traci",
+        "date": "4/25/2021",
+        "helpful_count": 8,
+        "not_helpful_count": 4,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "267690365",
+        "rating": 1,
+        "title": null,
+        "text": "Ordering this from walmart was a very hard task, from the beginning to the end, when i can finally get it, it comes broken, the box has a damage in one of the corners, and when i open it,  also the console, talk to customer service and the only solution they gave me was a refund. Very disappointing.",
+        "author": "Amina",
+        "date": "8/17/2021",
+        "helpful_count": 4,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      }
+    ],
+    "total_reviews": 10,
+    "review_summary": {
+      "average_rating": 4.6,
+      "total_count": 6899,
+      "rating_distribution": {
+        "1": 3,
+        "2": 3,
+        "3": 0,
+        "4": 1,
+        "5": 3
+      }
+    }
+  },
+  {
+    "url": "https://www.walmart.com/ip/Philergo-Nugget-Ice-Maker-Countertop-Pebble-Ice-Maker-Machine-Self-Cleaning-35lbs-24hr-Soft-Chewable-Pellet-Ice-Maker-Home-Kitchen-Stainless-Steel/6040950294?classType=REGULAR",
+    "title": "Philergo Nugget Ice Maker Countertop, Pebble Ice Maker Machine with Self-Cleaning, 35lbs/24hr, Soft Chewable Pellet Ice Maker for Home, Kitchen, Stainless Steel",
+    "description": "<p>Philergo is a premier home appliance brand dedicated to ringing innovative, high-performance products with superior design to consumers worldwide. This nugget ice maker countertop would be you first choice withe below outstanding feature, 6-10 mintues will be producted enough soft, chewable ice, with up to 35lbs/24hrs &nbsp;for your family, party. The colorful led indicator will show the portable ice maker machine what does it situation now. with size of 12.67\" x 8.66\" x 11.29\", it fits on any countertop for your kitchen.The crunchy crush ice, Making great iced tea, coffee, or cocktails. Even chill beers and keep food fresh.??</p>\n<p>🧊<b>Specification:</b></p>\n<p>Brand: Philergo</p><p>\n</p><p>Voltage: 115 Volts</p><p>\n</p><p>Energy Efficient: 1Kwh/8H</p><p>\n</p><p>Low Noise: &lt;45db</p><p>\n</p><p>Daily Output: 35lbs</p><p>\n</p><p>Material: Stainless Steel</p><p>\n</p><p>Water Tank Capacity: 1.2L</p><p>\n</p><p>Ice Basket Capacity: 1.8lbs</p><p>\n</p><p>Ice Type: Nugget Ice; Pebble Ice; Pellet Ice</p><p>\n</p><p>Product Weight: 20.8lbs</p><p>\n</p><p>Product Dimensions: 11.29\"D x 8.66\"W x 12.67\"H</p><p>\n</p><p>Feature: One Button, Led Indicator, Self-Cleaning, Smart Indicator Alert<br><br>🧊<b>Key Feature:</b></p>\n<ul><li>Intuitive &amp; Simple Controls: Our Philergo&nbsp;nugget ice maker countertop is designed with user-friendly concepts, just \"ONE\" button, everything will be control. Colorful Led indicator let you know what status is, white for Making, green for\n        ice be full, blue for self washing, red for water empty.</li></ul>\n<ul><li>Fash &amp; Effective Ice-Making: Philergo pebble ice maker produces soft chewable ice in just 6-10 minutes. with 1.2L water tank, providing you with about 35 pounds of pebble ice within 24 hours, is about 50 cups (8.5 fl oz) full of nugget ice. Ensuring\n        a steady supply of fresh pellet ice for your household or party. No need to go to the store for ice anymore!</li></ul>\n<ul><li>Nicer Nugget Ice: Philergo Pebble ice maker provides you with crunchy ice. These chewable nugget ice has a more softer texture and a larger surface area, which makes drinks cool faster, but melts slowly. Whatever the cocktails, sodas, beers, or any\n        drinks, even the food, our nugget ice will be your first choice.</li></ul>\n<ul><li>Hassle-Free Cleaning: The built-in self-cleaning mode takes care of routine maintenance, while a detachable top allows easy access for deep cleaning when you needed. Spend less time cleaning and more time enjoying your ice!</li></ul>\n<ul><li>Compact &amp; Portable Design: Our pebble ice machine has compact dimensions of 12.67 x&nbsp;8.66 x 11.29 inches. Fits on most countertops and ideal for home, kitchen, RV. Take it and enjoy the ice!</li></ul>\n<ul><li>Buy with Confidence: Our Philergo nugget ice makers provide you with a one-year warranty service. If our pebble ice maker meet any issues, do not hesitate, please contact us, we will give you reliable and satisfied support.<br></li></ul>\n<p>🧊<b>Package Included:</b></p>\n<p>1 x Nugget Ice Maker</p>\n<p>1 x Ice Scooper</p>\n<p>1 x Ice Basket</p>\n<p>1 x Water Tank</p>\n<p>🧊<b>NOTE:</b></p>\n<p>IF THE ICE MAKER YOU GOT IS BLUE/GREEN, THAT'S THE PROTECTIVE FILM. You can tear it out or keep it.</p>",
+    "price": {
+      "current": 149.99,
+      "currency": "USD",
+      "display": "$149.99",
+      "was_price": 299.99,
+      "savings": null
+    },
+    "images": [
+      "https://i5.walmartimages.com/seo/Philergo-Nugget-Ice-Maker-Countertop-Pebble-Ice-Maker-Machine-Self-Cleaning-35lbs-24hr-Soft-Chewable-Pellet-Ice-Maker-Home-Kitchen-Stainless-Steel_79ec8f16-38b3-46a0-b9a9-e6e63a631113.2475ac3109094bc3252c26cd13bbb18a.jpeg",
+      "https://i5.walmartimages.com/asr/24e668df-2765-405a-b5ff-85b69fd72aea.c0063404a1956361bee2379610d597e7.png",
+      "https://i5.walmartimages.com/asr/9d5ed61a-50c8-46fd-8a60-8d24d845283b.fbfbcbde9b5837d5349eaf6ddea4a7c3.png",
+      "https://i5.walmartimages.com/asr/438a09a3-b3e1-4500-a650-1b25df10304f.2d05db6c214fc2e7e72ef5e8386804a6.png",
+      "https://i5.walmartimages.com/asr/88baa360-aea1-4213-aa09-8b724afb94bc.b614b9d3484cd7f85f48b25d875e01e3.png",
+      "https://i5.walmartimages.com/asr/b82085d5-5c24-4c90-a556-2f81b6bfe8c5.3d988755b903120c801615144f4b82a3.jpeg",
+      "https://i5.walmartimages.com/asr/8b9f6f88-a557-4dd6-b195-3c912d0244c0.3ee59b9a6c4b1bf4f94049a57f26912a.png",
+      "https://i5.walmartimages.com/asr/676dbf20-d951-4d61-bde5-52d0a888c6a4.96900c26517af18b35d21e3ddebc4187.png",
+      "https://i5.walmartimages.com/asr/38672313-e78e-440a-b026-7716bb43b3f1.898234b86e1690f7d6076d399e795d79.png",
+      "https://i5.walmartimages.com/asr/129ccad0-2382-475e-8c90-b1443df33395.cd27b98f742d2e3c2381fd72dcd78b5e.jpeg"
+    ],
+    "specifications": {
+      "Brand": "Philergo",
+      "Model": "IceMaker36T",
+      "UPC": "810110437364"
+    },
+    "brand": "Philergo",
+    "model": "IceMaker36T",
+    "sku": "5LS5YG4AT8DF",
+    "upc": "810110437364",
+    "rating": 4.3,
+    "review_count": 596,
+    "availability": "IN_STOCK",
+    "category": [
+      {
+        "name": "Home",
+        "url": "/cp/home/4044"
+      },
+      {
+        "name": "Appliances",
+        "url": "/cp/appliances/90548"
+      },
+      {
+        "name": "Freezers",
+        "url": "/cp/freezers/6828819"
+      },
+      {
+        "name": "Ice Makers",
+        "url": "/cp/ice-makers/4192417"
+      },
+      {
+        "name": "Countertop Ice Makers",
+        "url": "/cp/countertop-ice-makers/9372690"
+      }
+    ],
+    "seller": "Giada Ergonomic Furniture Co., Ltd",
+    "scraped_at": "2025-09-15 01:25:31",
+    "reviews": [
+      {
+        "review_id": "393487439",
+        "rating": 5,
+        "title": "great purchase",
+        "text": "love the size of the ice and the amount that is produced. will take a bit to have enough ice for drinks but if you run it all day and bag the ice periodically you can accumulate a nice amount in a short period of time.   we use a lot of ice and love it.",
+        "author": "Michelle",
+        "date": "7/27/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "387493393",
+        "rating": 5,
+        "title": "Great nugget Ice maker",
+        "text": "This ice maker has exceeded my expectations. I didn't want to spend the money on a nugget ice maker. After my 3rd bullet ice maker I was searching for an affordable nugget one. The basket holds a good amount of ice and per the instruction the chute does need to be cleared by redistributing the ice,  if you want more ice to be made. I use it several times a day so it is not a problem for me.  I use RO water but still have used the cleaning mode, which I like as my bullet ones didn't have this feature. This was actually half price and so far it has been great. The picture still shows the protective film that I have yet to remove.",
+        "author": "Krystal",
+        "date": "6/2/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "391378820",
+        "rating": 5,
+        "title": "so far, so good!",
+        "text": "This is my second icemaker. The 1st one lasted almost 2 years, just 1 week shy of the extended warranty plan's expiration date. That almost never happens. I got lucky.\n\nThis one is better: I like the visible ice basket so I  don't have to open the lid to see the amount of ice. It has a suction cup to hang the scoop. It is faster at making ice. It's prettier. The ice falls from the center, so it doesn't seem to think it's full as fast as the one that filled from the side.\nI know most machines are made by the same company but with different features and the same short life spans, usually 1 to 2 years. Always get the extended warranty on items like this. \n\nI got this one for $25  less than on Amazon and the 3 year Allstate plan for less than 1/2 the price of 2 year Asurion plan. Win! \n\n I had really wanted a Smart ice maker this time, but I found with my 1st machine that using a Switchbot made setting a timer much cheaper, and it's Google Home Compatible. \n\nClean regularly to make it last, esp with hard water. 5 to 1 water/vinegar.  I just started using descaling tablets or liquid to make this one last longer. Use filtered, spring, or distilled water if possible. \nTake the top off the machine to check for mold or scale every month, or if you see any specks in the water. \nEnjoy your clean Sonic ice!",
+        "author": "Cady",
+        "date": "7/10/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "395557338",
+        "rating": 5,
+        "title": "Good Ice",
+        "text": "The icemaker produces really good ice. It is has only one problem and that problem is that it randomly turns off and we have yet to figure out why but for the most part it usually just always is producing ice. It doesn't produce a lot, but yeah, it's good.",
+        "author": "Robert",
+        "date": "8/16/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "392683780",
+        "rating": 5,
+        "title": "Great Nugget Ice Maker",
+        "text": "This seems like such a great buy for the price.  Since I have only had it for a week we will wait and see   I Love  the soft nuggets, must nugget ice makers  are so expensive.   I will review again after I have had it for awhile. Right now I highly recommend giving it a try great price and seems like a great little ice maker",
+        "author": "Cindy",
+        "date": "7/19/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "393656050",
+        "rating": 5,
+        "title": "Definitely a good purchase",
+        "text": "The only thing I would do differently is make the ice tray hold the cold ice. You have to transfer the ice into a ziplock bag or something of the sort to store it in freezer. Keep something close to break up the ice. Other than that it makes perfect bite size ice! I like it! I use bottle water not our well water just to save the machine.",
+        "author": "Shaylean",
+        "date": "7/29/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "391204234",
+        "rating": 4,
+        "title": "Good ice maker but it's loud,",
+        "text": "I like that it makes the ice fairly quickly . but the machine is loud . I've had other ice makers in the past and they were way quieter than this. If you're home tends to be generally quiet on a regular basis this is going to be louder your refrigerator running in the background or a washing machine or a clothing dryer . it's definitely going to be louder than a dishwasher . if you're expecting to get this machine and expect it to be quiet this is not the machine for you",
+        "author": "anonymous",
+        "date": "7/8/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "389667812",
+        "rating": 4,
+        "title": null,
+        "text": "It serves the purpose although it never fills up the bin entirely because the extraction port gets blocked by the ice so you have to move it around for it to continue to fill the bin. Plus the cooling of the interior is lacking which results in the ice melting back into the water bin",
+        "author": "Tom",
+        "date": "6/24/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "390939861",
+        "rating": 3,
+        "title": "Bad design",
+        "text": "The only bad thing about this machine is the ice stacks up against the back wall where the ice is coming out and it thinks it's full so it stops making ice so the bucket never fills up unless you keep an eye on it and knock the ice down which is about every 30 minutes or so.  Disappointed with it.",
+        "author": "Rita",
+        "date": "7/6/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      },
+      {
+        "review_id": "395484352",
+        "rating": 3,
+        "title": "poor ice tray design",
+        "text": "the ice does spread out and fill up the container. the ice dispensing shoot is narrow which stacks up the ice which stops the machine after 9 oz of ice is produced. Other counter size nugget ice machines spread out the ice allowing it to fill up the entire container before stopping.",
+        "author": "Robert",
+        "date": "8/16/2025",
+        "helpful_count": 0,
+        "not_helpful_count": 0,
+        "verified_purchase": true,
+        "photos": []
+      }
+    ],
+    "total_reviews": 10,
+    "review_summary": {
+      "average_rating": 4.3,
+      "total_count": 596,
+      "rating_distribution": {
+        "1": 0,
+        "2": 0,
+        "3": 2,
+        "4": 2,
+        "5": 6
+      }
+    }
+  }
+]
