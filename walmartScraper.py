@@ -687,16 +687,16 @@ async def main():
     # Example Walmart product URLs
     urls = [
        
-        "https://www.walmart.com/ip/seort/14590271671",
-        "https://www.walmart.com/ip/290404627",
-        "https://www.walmart.com/ip/954302821",
-        "https://www.walmart.com/ip/5314190515",
-        "https://www.walmart.com/ip/2703155849",
-        "https://www.walmart.com/ip/527818837",
-        "https://www.walmart.com/ip/16344006899",
-        "https://www.walmart.com/ip/5351994960",
-        "https://www.walmart.com/ip/3910421282",
-        "https://www.walmart.com/ip/AND1-Men-s-Cushion-Quarter-Socks-12-Pack/870945481?athAsset=eyJhdGhjcGlkIjoiODcwOTQ1NDgxIiwiYXRoc3RpZCI6IkNTMDIwIiwiYXRoYW5jaWQiOiJJdGVtQ2Fyb3VzZWwiLCJhdGhyayI6MC4wfQ==&athena=true&athbdg=L1300"
+            "https://www.walmart.com/ip/20000-mAh-Portable-Charger-Power-Bank-Dual-USB-Battery-Pack-for-iPhone-iPad-Galaxy-Android-Pixel-and-Tablet-Black/3303493713",
+            "https://www.walmart.com/ip/2025-Apple-11-inch-iPad-Air-M3-Built-for-Apple-Intelligence-Wi-Fi-128GB-Space-Gray/15450254481",
+            "https://www.walmart.com/ip/2K-1080p-Webcam-with-2-Microphones-for-Laptop-Conference-Streaming-PC-USB-Web-Cam-Autofocus-Vizolink/1946595670",
+            "https://www.walmart.com/ip/55UA7500ZUA-AUS/14356152032",
+            "https://www.walmart.com/ip/ASUS-Chromebook-CX1-15-6-FHD-Intel-Celeron-N4500-128GB-eMMC-4GB-RAM-ChromeOS-Fabric-Blue/13737005799",
+            "https://www.walmart.com/ip/ASUS-Chromebook-CX1-15-6-FHD-Intel-Celeron-N4500-128GB-eMMC-4GB-RAM-ChromeOS-Pure-Gray/13722470932",
+            "https://www.walmart.com/ip/ASUS-Vivobook-Go-15-6-Laptop-Intel-i3-N305-8GB-256GB-Windows-11-Home-in-S-mode-Cool-Silver-E1504GA-WS35/13542163431",
+            "https://www.walmart.com/ip/AirPods-nbsp-Pro-nbsp-3/17835006350",
+            "https://www.walmart.com/ip/Apple-Watch-SE-2nd-Gen-GPS-40mm-Smartwatch-with-Starlight-Aluminum-Case-with-Lake-Green-Sport-Loop/11471055514",
+            "https://www.walmart.com/ip/Beats-Pill-Wireless-Bluetooth-Speaker-Navy-Blue/16071962081",
         # Add more URLs here
     ]
     
