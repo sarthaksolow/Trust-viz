@@ -62,6 +62,7 @@ services:
       context: ./services/swarm-intelligence
     ports:
       - "5001:5001"
+      - "8501:8501" # Expose Streamlit port
     depends_on:
       - kafka
     environment:
