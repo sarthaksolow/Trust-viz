@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import logging
 import json
 import random
-from crewai_tools import tool # Import tool decorator
+from crewai import tool # Import tool decorator
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
