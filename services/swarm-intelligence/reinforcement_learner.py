@@ -2,6 +2,9 @@ import json
 import os
 import logging
 from typing import Dict, List, Any
+import faiss
+import numpy as np
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -15,29 +18,53 @@ CONFIRMED_FRAUD_OUTCOMES = [
 ]
 
 class ReinforcementLearner:
-    def __init__(self):
-        self.learned_patterns = self._load_learned_patterns()
+    def __init__(self, embedding_dimension: int = 128):
+        self.embedding_dimension = embedding_dimension
+        self.index = faiss.IndexFlatL2(self.embedding_dimension) # L2 distance for similarity
+        self.learned_patterns = [] # Keep a list of patterns for now
+        self.pattern_embeddings = [] # Store embeddings alongside patterns
+        self._load_learned_patterns() # Load from disk if available
         logger.info(f"ReinforcementLearner initialized. Loaded {len(self.learned_patterns)} learned patterns.")
 
-    def _load_learned_patterns(self) -> List[Dict]:
-        """Loads previously learned patterns from a persistent store (or initializes empty)."""
-        # For simplicity, we'll store learned patterns in a separate JSON file or just keep in memory for now.
-        # In a real system, this would be a database.
+    def _pattern_to_embedding(self, pattern: Dict) -> np.ndarray:
+        """Converts a pattern dictionary to a numerical embedding (placeholder)."""
+        # In a real system, this would use a more sophisticated embedding model
+        # (e.g., sentence transformers, or even train a custom one).
+        # For now, create a simple embedding based on hashing the JSON string.
+        pattern_string = json.dumps(pattern, sort_keys=True)
+        hash_value = hash(pattern_string) % (10**8) # Limit size
+        embedding = np.random.rand(self.embedding_dimension).astype('float32') # Placeholder
+        embedding[0] = hash_value # Inject some information
+        return embedding
+
+    def _load_learned_patterns(self):
+        """Loads learned patterns and their embeddings from persistent storage."""
         learned_patterns_path = "services/swarm-intelligence/learned_patterns.json"
         if os.path.exists(learned_patterns_path):
             try:
                 with open(learned_patterns_path, 'r') as f:
-                    return json.load(f)
+                    self.learned_patterns = json.load(f)
+                    self.pattern_embeddings = [self._pattern_to_embedding(p) for p in self.learned_patterns]
+                    self.pattern_embeddings = np.array(self.pattern_embeddings).astype('float32')
+                    self.index = faiss.IndexFlatL2(self.embedding_dimension) # Re-initialize index
+                    self.index.add(self.pattern_embeddings) # Add embeddings to index
+                    logger.info(f"Loaded {len(self.learned_patterns)} learned patterns and embeddings.")
             except json.JSONDecodeError:
                 logger.warning(f"Invalid {learned_patterns_path} detected. Starting with empty patterns.")
-                return []
-        return []
+                self.learned_patterns = []
+                self.pattern_embeddings = []
+                self.index = faiss.IndexFlatL2(self.embedding_dimension)
+        else:
+            self.learned_patterns = []
+            self.pattern_embeddings = []
+            self.index = faiss.IndexFlatL2(self.embedding_dimension)
 
     def _save_learned_patterns(self):
-        """Saves current learned patterns to a persistent store."""
+        """Saves learned patterns and their embeddings to persistent storage."""
         learned_patterns_path = "services/swarm-intelligence/learned_patterns.json"
         with open(learned_patterns_path, 'w') as f:
             json.dump(self.learned_patterns, f, indent=4)
+        # No need to save embeddings separately with faiss
 
     def _read_exploratory_signals(self) -> List[Dict]:
         """Reads all exploratory signals from pattern_memory.json."""
@@ -93,25 +120,45 @@ class ReinforcementLearner:
                     "type": signal_type,
                     "heuristic": heuristic,
                     "reward_score": signal.get("reward_score", 0) + 1, # Increment reward
-                    "last_rewarded": os.getenv("CURRENT_TIME", "N/A") # Placeholder for current time
+                    "last_rewarded": str(datetime.now()),
+                    "decay_factor": 0.9 # Example decay factor
                 }
                 new_useful_patterns.append(pattern)
                 logger.info(f"Rewarded useful pattern: {pattern}")
             else:
-                # Optionally, penalize or decay less useful patterns
-                pass
-        
-        # Update self.learned_patterns (simple merge/update for now)
+                # Explore more signals: add some new signals even if not immediately useful
+                if random.random() < 0.1: # 10% chance of adding a new signal
+                    new_heuristic = f"variation_of_{heuristic}" # Example
+                    pattern = {
+                        "type": signal_type,
+                        "heuristic": new_heuristic,
+                        "reward_score": 0.1, # Initial small reward
+                        "last_rewarded": str(datetime.now()),
+                        "decay_factor": 0.9
+                    }
+                    new_useful_patterns.append(pattern)
+                    logger.info(f"Exploring new signal: {pattern}")
+
+        # Update self.learned_patterns (using vector database)
+        logger.info(f"Adding {len(new_useful_patterns)} new patterns to learned patterns.")
         for new_pattern in new_useful_patterns:
-            found = False
-            for i, existing_pattern in enumerate(self.learned_patterns):
-                if existing_pattern.get("type") == new_pattern.get("type") and \
-                   existing_pattern.get("heuristic") == new_pattern.get("heuristic"):
-                    self.learned_patterns[i] = new_pattern # Update existing
-                    found = True
-                    break
-            if not found:
-                self.learned_patterns.append(new_pattern) # Add new
+            embedding = self._pattern_to_embedding(new_pattern)
+            self.pattern_embeddings.append(embedding)
+            self.learned_patterns.append(new_pattern)
+            self.index.add(np.array([embedding]).astype('float32')) # Add to faiss index
+
+        # Decay rewards of existing patterns
+        for i, pattern in enumerate(self.learned_patterns):
+            if "decay_factor" in pattern and "last_rewarded" in pattern:
+                try:
+                    last_rewarded = datetime.fromisoformat(pattern["last_rewarded"])
+                    time_since_reward = datetime.now() - last_rewarded
+                    decay_amount = pattern["reward_score"] * pattern["decay_factor"] * (time_since_reward.days / 30) # Monthly decay
+                    pattern["reward_score"] = max(0, pattern["reward_score"] - decay_amount)
+                    self.learned_patterns[i] = pattern
+                    logger.info(f"Decayed reward for pattern: {pattern}, Decay Amount: {decay_amount}")
+                except Exception as e:
+                    logger.warning(f"Error decaying reward for pattern: {pattern}. {e}")
 
         self._save_learned_patterns()
         logger.info(f"Updated learned patterns. Total: {len(self.learned_patterns)}")
@@ -127,17 +174,27 @@ class ReinforcementLearner:
             "image_agent": ""
         }
 
-        for pattern in self.learned_patterns:
-            if pattern.get("reward_score", 0) > 1: # Only use highly rewarded patterns
-                heuristic_desc = pattern.get("heuristic", "an unidentified pattern")
-                if pattern["type"] == "price_manipulation":
-                    dynamic_prompts["price_agent"] += f"\n- **Prioritize**: Look for '{heuristic_desc}' as it's a highly rewarded fraud pattern."
-                elif pattern["type"] == "fake_reviews":
-                    dynamic_prompts["review_agent"] += f"\n- **Prioritize**: Investigate '{heuristic_desc}' as it's a highly rewarded fraud pattern."
-                elif pattern["type"] == "seller_behavior_anomaly":
-                    dynamic_prompts["seller_agent"] += f"\n- **Prioritize**: Pay close attention to '{heuristic_desc}' as it's a highly rewarded fraud pattern."
-                elif pattern["type"] == "image_manipulation":
-                    dynamic_prompts["image_agent"] += f"\n- **Prioritize**: Scrutinize '{heuristic_desc}' as it's a highly rewarded fraud pattern."
+        # Search the vector database for the most relevant patterns
+        num_results = 5 # Example: get top 5 most similar patterns
+        for agent_type in dynamic_prompts.keys():
+            # Create a query embedding (e.g., based on the agent's role/goal)
+            query_embedding = np.random.rand(self.embedding_dimension).astype('float32') # Placeholder
+            D, I = self.index.search(np.array([query_embedding]), num_results) # Search the index
+            
+            # Add the most relevant patterns to the prompt
+            for i in range(num_results):
+                pattern_index = I[0][i]
+                if pattern_index < len(self.learned_patterns):
+                    pattern = self.learned_patterns[pattern_index]
+                    heuristic_desc = pattern.get("heuristic", "an unidentified pattern")
+                    if pattern["type"] == "price_manipulation" and agent_type == "price_agent":
+                        dynamic_prompts["price_agent"] += f"\n- **Prioritize**: Look for '{heuristic_desc}' as it's a highly rewarded fraud pattern."
+                    elif pattern["type"] == "fake_reviews" and agent_type == "review_agent":
+                        dynamic_prompts["review_agent"] += f"\n- **Prioritize**: Investigate '{heuristic_desc}' as it's a highly rewarded fraud pattern."
+                    elif pattern["type"] == "seller_behavior_anomaly" and agent_type == "seller_agent":
+                        dynamic_prompts["seller_agent"] += f"\n- **Prioritize**: Pay close attention to '{heuristic_desc}' as it's a highly rewarded fraud pattern."
+                    elif pattern["type"] == "image_manipulation" and agent_type == "image_agent":
+                        dynamic_prompts["image_agent"] += f"\n- **Prioritize**: Scrutinize '{heuristic_desc}' as it's a highly rewarded fraud pattern."
         
         return dynamic_prompts
 
