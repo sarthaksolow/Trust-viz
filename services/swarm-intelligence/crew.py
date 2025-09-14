@@ -124,60 +124,8 @@ def run_isolation_forest(structured_data_json: str) -> str:
         logger.error(f"Error running Isolation Forest: {e}")
         return json.dumps({"error": str(e), "anomaly_score": 0.0, "is_outlier": False, "confidence": 0.0})
 
-# Initialize Groq LLM with proper configuration
-def initialize_groq_llm():
-    try:
-        groq_api_key = os.getenv("GROQ_API_KEY")
-        if not groq_api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables.")
-        
-        # Use the exact model name without provider prefix for langchain_groq
-        groq_model_name = os.getenv("GROQ_MODEL_NAME", "llama-3.1-8b-instant")
-        
-        # Initialize ChatGroq with proper parameters
-        groq_llm = ChatGroq(
-            temperature=0,
-            groq_api_key=groq_api_key,
-            model_name=groq_model_name,
-            max_tokens=4096,  # Set reasonable token limit
-            timeout=60,       # Set timeout
-        )
-        
-        logger.info(f"Groq LLM initialized successfully with model: {groq_model_name}")
-        return groq_llm
-        
-    except Exception as e:
-        logger.error(f"Error initializing Groq LLM: {e}")
-        return None
 
-# Alternative: Use CrewAI's built-in LLM configuration
-def initialize_crewai_groq_llm():
-    try:
-        groq_api_key = os.getenv("GROQ_API_KEY")
-        if not groq_api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables.")
-        
-        # Set environment variables for CrewAI
-        os.environ["GROQ_API_KEY"] = groq_api_key
-        
-        # For CrewAI, you might need to use a different approach
-        from langchain_groq import ChatGroq
-        
-        groq_llm = ChatGroq(
-            model="llama-3.1-8b-instant",  # No provider prefix needed for langchain_groq
-            temperature=0,
-            api_key=groq_api_key
-        )
-        
-        logger.info("CrewAI Groq LLM initialized successfully")
-        return groq_llm
-        
-    except Exception as e:
-        logger.error(f"Error initializing CrewAI Groq LLM: {e}")
-        return None
-
-# Try both initialization methods
-groq_llm = initialize_groq_llm() or initialize_crewai_groq_llm()
+groq_llm = LLM(model="groq/llama-3.1-8b-instant")
 
 class FraudDetectionAgents:
     def __init__(self, dynamic_prompts: dict = None):
