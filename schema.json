@@ -1,0 +1,52 @@
+{
+  "seller_id": "WMT-SELLER-98234",
+  "trust_score": 72.5,
+  "score_version": "v1.3",
+  "evaluation_hash": "8af3c17e8a46d5f72a02b998bc93ac0d52c5b1d314b2c75bb21a3f30e1a5b2fa",
+  "timestamp": "2025-08-10T14:23:00Z",
+  "flag_status": "REVIEW",
+  "issued_by": "Walmart_Main_Node",
+  "prev_tx_id": "c2b33f1098eac4f1bbf7d8e9a2b11107d98d0cc3",
+  "comments": "Image plagiarism detected, suspicious review activity."
+}
+
+{
+  "seller_id": "WMT-SELLER-98234",
+  "listing_id": "LIST-12345",
+  "analysis_date": "2025-08-10T14:23:00Z",
+  "image_analysis": {
+    "plagiarism_score": 0.92,
+    "matched_brand": "Nike",
+    "match_confidence": 0.89,
+    "image_hash": "f2a45c7c..."
+  },
+  "review_analysis": {
+    "avg_sentiment": -0.15,
+    "bot_probability": 0.78,
+    "review_burst": true,
+    "total_reviews": 340
+  },
+  "order_return_analysis": {
+    "return_rate": 0.26,
+    "return_reason_pattern": ["fake item", "wrong product"],
+    "refund_time_avg_days": 3.2
+},
+  "behavior_analysis": {
+    "new_listings_last_30_days": 45,
+    "category_spread": ["shoes", "jackets"],
+    "sudden_activity_spike": true
+  },
+  "sub_scores": {
+    "image_score": 65,
+    "review_score": 40,
+    "behavior_score": 55,
+    "orders_score": 50
+  },
+  "final_trust_score": 72.5,
+  "model_version": "v1.3",
+  "evidence_files": [
+    "s3://trustviz/evidence/WMT-SELLER-98234/listing123_img1.png",
+    "s3://trustviz/reports/WMT-SELLER-98234/report2025_08_10.pdf"
+  ],
+  "notes": "Image plagiarism detected, suspicious review patterns."
+}
