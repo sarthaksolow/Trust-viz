@@ -1,7 +1,15 @@
+
+crewai
+
+scikit-learn
+pandas
+numpy
+joblib
+
+python-dotenv
 fastapi
 uvicorn
 confluent_kafka
-pydantic
-fastapi-utils
 fastapi-utils
 typing-inspect
+crewai

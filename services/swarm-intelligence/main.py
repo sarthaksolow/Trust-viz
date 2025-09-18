@@ -1,222 +1,186 @@
-# To run the server, use:
+# services/swarm-intelligence/main.py
+# Run with:
 # uvicorn main:app --host 0.0.0.0 --port 5001 --reload
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Any, Dict
-from confluent_kafka import Producer, Consumer, KafkaException
-from fastapi_utils.tasks import repeat_every
-import json
-import os
-import logging
+from typing import Dict, Any, List
+import os, json, random, logging
 
-# ----------------------------------
-# Logging setup
-# ----------------------------------
+from crewai import Agent, Crew, Task
+from crewai.llm import LLM
+
+# ------------------------------
+# Logging
+# ------------------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SwarmIntelligence")
 
-# ----------------------------------
-# FastAPI App
-# ----------------------------------
+# ------------------------------
+# FastAPI setup
+# ------------------------------
 app = FastAPI(title="Swarm Intelligence")
-
-# CORS configuration
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"], allow_credentials=True,
+    allow_methods=["*"], allow_headers=["*"],
 )
 
-# ----------------------------------
-# Kafka Config
-# ----------------------------------
-KAFKA_BOOTSTRAP_SERVERS = os.getenv('BOOTSTRAP_SERVERS', 'kafka:29092')
-KAFKA_TOPIC_RAW_DATA = os.getenv('KAFKA_TOPIC_RAW_DATA', 'raw-data')
-KAFKA_TOPIC_IMAGE_CHECK = os.getenv('KAFKA_TOPIC_IMAGE_CHECK', 'image-check')
-KAFKA_TOPIC_IMAGE_SCORE = os.getenv('KAFKA_TOPIC_IMAGE_SCORE', 'image-score')
-KAFKA_TOPIC_TRUST_EVENTS = os.getenv('KAFKA_TOPIC_TRUST_EVENTS', 'trust-events')
+# ------------------------------
+# Memory files
+# ------------------------------
+PATTERN_MEMORY_FILE = "pattern_memory.json"
+LEARNED_PATTERNS_FILE = "learned_patterns.json"
+TRUST_EVENTS_FILE = "trust_events.json"
 
-producer = None
-consumer = None
+def load_memory(file: str) -> List[dict]:
+    if not os.path.exists(file):
+        return []
+    with open(file, "r") as f:
+        return json.load(f)
 
-# ----------------------------------
-# Kafka Helpers
-# ----------------------------------
-def get_producer_config():
-    return {
-        'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS,
-        'client.id': 'swarm-intelligence-producer'
-    }
+def save_memory(file: str, data: List[dict]):
+    with open(file, "w") as f:
+        json.dump(data, f, indent=2)
 
-def get_consumer_config():
-    return {
-        'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS,
-        'group.id': 'swarm-intelligence-group',
-        'auto.offset.reset': 'earliest'
-    }
+# ------------------------------
+# CrewAI Setup
+# ------------------------------
+llm = LLM(model="groq/llama-3.1-8b-instant", api_key=os.getenv("GROQ_API_KEY"))
 
-def delivery_report(err, msg):
-    if err is not None:
-        logger.error(f'❌ Message delivery failed: {err}')
-    else:
-        logger.info(f'✅ Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}')
+price_agent = Agent(
+    role="Price Analyst",
+    goal="Detect abnormal pricing patterns",
+    backstory="Evaluates if product prices deviate from benchmarks or history.",
+    llm=llm,
+)
 
-# ----------------------------------
-# FastAPI Startup & Shutdown
-# ----------------------------------
-@app.on_event("startup")
-def startup_event():
-    global producer, consumer
-    logger.info("🚀 Starting Swarm Intelligence Service...")
+review_agent = Agent(
+    role="Review Inspector",
+    goal="Detect fake or spammy reviews",
+    backstory="Looks at review sentiment, duplication, and suspicious wording.",
+    llm=llm,
+)
 
-    try:
-        producer = Producer(get_producer_config())
-        logger.info("✅ Kafka Producer initialized.")
-    except Exception as e:
-        logger.error(f"❌ Failed to initialize producer: {e}")
-        raise
+seller_agent = Agent(
+    role="Seller Monitor",
+    goal="Assess seller behavior and trustworthiness",
+    backstory="Checks account history, return ratios, and sudden changes.",
+    llm=llm,
+)
 
-    try:
-        consumer = Consumer(get_consumer_config())
-        consumer.subscribe([KAFKA_TOPIC_RAW_DATA])
-        logger.info("✅ Kafka Consumer subscribed to 'raw-data'.")
-    except Exception as e:
-        logger.error(f"❌ Failed to initialize consumer: {e}")
-        raise
+consensus_agent = Agent(
+    role="Consensus Judge",
+    goal="Combine findings into a final trust score",
+    backstory="Aggregates swarm agent signals into one decision.",
+    llm=llm,
+)
 
-@app.on_event("shutdown")
-def shutdown_event():
-    if producer:
-        producer.flush()
-        logger.info("🧼 Kafka Producer flushed.")
-    if consumer:
-        consumer.close()
-        logger.info("🧼 Kafka Consumer closed.")
-
-# ----------------------------------
-# Models
-# ----------------------------------
+# ------------------------------
+# Pydantic models
+# ------------------------------
 class AnalysisRequest(BaseModel):
-    data: Dict[Any, Any]
+    data: Dict[str, Any]
 
-class ScoreRequest(BaseModel):
-    product_id: str
-    seller_id: str
-    trust_score: float
-    reason: str
+# ------------------------------
+# Core swarm analysis
+# ------------------------------
+def run_swarm_analysis(data: Dict[str, Any]) -> Dict[str, Any]:
+    # 20% chance exploration → store new signal field
+    if random.random() < 0.2:
+        mem = load_memory(PATTERN_MEMORY_FILE)
+        explore_field = random.choice(list(data.keys()))
+        mem.append({"product_id": data.get("product_id"), "explore_field": explore_field})
+        save_memory(PATTERN_MEMORY_FILE, mem)
 
-# ----------------------------------
-# Endpoints
-# ----------------------------------
-@app.post("/analyze")
-async def analyze_data(request: AnalysisRequest):
+    # Define consensus task
+    task = Task(
+        description=f"""
+        Analyze this product listing data and output structured JSON.
+        Data: {json.dumps(data)}
+
+        Return JSON with fields:
+        - fraud_signals: list of strings
+        - trust_score: float (0-1)
+        - confidence: float (0-1)
+        - explanation: string
+        """,
+        agent=consensus_agent,
+        expected_output="JSON with fraud_signals, trust_score, confidence, explanation",
+    )
+
+    crew = Crew(agents=[price_agent, review_agent, seller_agent, consensus_agent], tasks=[task])
+    result = crew.kickoff()
+
+    # ✅ unwrap CrewOutput
+    raw_output = result.raw if hasattr(result, "raw") else str(result)
+
     try:
-        data = request.data
-        logger.info(f"🧪 Manual analysis triggered: {data}")
+        result_json = json.loads(raw_output)
+    except Exception:
+        result_json = {
+            "fraud_signals": ["ParseError"],
+            "trust_score": 0.5,
+            "confidence": 0.5,
+            "explanation": raw_output
+        }
 
-        producer.produce(
-            KAFKA_TOPIC_IMAGE_CHECK,
-            key=data.get('product_id', '').encode('utf-8'),
-            value=json.dumps(data).encode('utf-8'),
-            callback=delivery_report
-        )
-        producer.flush()
+    return {
+        "product_id": data.get("product_id"),
+        "fraud_score": result_json.get("trust_score", 0),
+        "details": {
+            "trust_score": result_json.get("trust_score", 0),
+            "confidence": result_json.get("confidence", 0),
+            "fraud_signals": result_json.get("fraud_signals", []),
+            "explanation": result_json.get("explanation", ""),
+        }
+    }
 
-        return {"fraud_score": 0.1, "agent_id": "agent-001"}
+# ------------------------------
+# Endpoints
+# ------------------------------
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "Swarm Intelligence", "agents": 4}
+
+@app.post("/analyze")
+def analyze(request: AnalysisRequest):
+    try:
+        return run_swarm_analysis(request.data)
     except Exception as e:
         logger.error(f"❌ Error in /analyze: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/score")
-async def handle_score(data: ScoreRequest):
-    try:
-        logger.info(f"📊 Received trust score for product: {data.product_id}")
+@app.post("/simulate")
+def simulate():
+    """Run analysis on 10 synthetic products."""
+    products = [
+        {"product_id": f"prod_{i}", "seller_id": f"seller_{i}", "price": random.randint(10, 200),
+         "quantity": random.randint(1, 50), "recent_reviews": ["Great!", "Bad", "Looks fake"],
+         "seller_history": {"account_age_days": random.randint(10, 400), "total_sales": random.randint(1, 500)}}
+        for i in range(10)
+    ]
+    results = [run_swarm_analysis(p) for p in products]
 
-        trust_event = {
-            "product_id": data.product_id,
-            "seller_id": data.seller_id,
-            "trust_score": data.trust_score,
-            "reason": data.reason,
-            "stage": "final"
-        }
+    # Save trust events
+    trust_events = load_memory(TRUST_EVENTS_FILE)
+    for r in results:
+        trust_events.append({
+            "product_id": r["product_id"],
+            "trust_score": r["details"]["trust_score"],
+            "confidence": r["details"]["confidence"],
+            "fraud_signals": r["details"]["fraud_signals"],
+        })
+    save_memory(TRUST_EVENTS_FILE, trust_events)
+    return results
 
-        producer.produce(
-            KAFKA_TOPIC_TRUST_EVENTS,
-            key=data.seller_id.encode('utf-8'),
-            value=json.dumps(trust_event).encode('utf-8'),
-            callback=delivery_report
-        )
-        producer.flush()
+@app.get("/trust_events")
+def get_trust_events():
+    return {"trust_events": load_memory(TRUST_EVENTS_FILE)}
 
-        return {"status": "success", "message": "Trust score sent to Trust Ledger"}
-    except Exception as e:
-        logger.error(f"❌ Error in /score: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+@app.delete("/trust_events")
+def clear_trust_events():
+    save_memory(TRUST_EVENTS_FILE, [])
+    return {"message": "Trust events cleared"}
 
-@app.get("/health")
-def health_check():
-    return {
-        "status": "ok",
-        "service": "Swarm Intelligence",
-        "kafka_connected": producer is not None
-    }
-
-# ----------------------------------
-# Background Task: Poll raw-data topic
-# ----------------------------------
-@app.on_event("startup")
-@repeat_every(seconds=2)
-def poll_raw_data():
-    global consumer
-    try:
-        msg = consumer.poll(1.0)
-        if msg is None:
-            return
-        if msg.error():
-            raise KafkaException(msg.error())
-
-        raw_event = json.loads(msg.value().decode('utf-8'))
-        logger.info(f"📥 Received raw event: {raw_event}")
-
-        # Simple rule-based scoring
-        risk_score = 0.1 if raw_event.get("quantity", 0) < 100 else 0.9
-
-        # 1. Image check request
-        image_payload = {
-            "product_id": raw_event["product_id"],
-            "product_image_url": raw_event.get("product_image_url", "")
-        }
-        producer.produce(
-            KAFKA_TOPIC_IMAGE_CHECK,
-            key=raw_event["product_id"].encode('utf-8'),
-            value=json.dumps(image_payload).encode('utf-8'),
-            callback=delivery_report
-        )
-
-        # 2. Trust events (early stage)
-        trust_payload = {
-            "seller_id": raw_event["seller_id"],
-            "product_id": raw_event["product_id"],
-            "trust_score": risk_score,
-            "reason": "Basic quantity rule",
-            "stage": "early"
-        }
-        producer.produce(
-            KAFKA_TOPIC_TRUST_EVENTS,
-            key=raw_event["seller_id"].encode('utf-8'),
-            value=json.dumps(trust_payload).encode('utf-8'),
-            callback=delivery_report
-        )
-
-        producer.flush()
-    except Exception as e:
-        logger.error(f"🚨 Error during raw-data polling: {e}")
